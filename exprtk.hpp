@@ -2,7 +2,11 @@
  ******************************************************************
  *           C++ Mathematical Expression Toolkit Library          *
  *                                                                *
+<<<<<<< Updated upstream
  * Author: Arash Partow (1999-2024)                               *
+=======
+ * Author: Arash Partow (1999-2025)                               *
+>>>>>>> Stashed changes
  * URL: https://www.partow.net/programming/exprtk/index.html      *
  *                                                                *
  * Copyright notice:                                              *
@@ -79,6 +83,7 @@ namespace exprtk
 
    #if __cplusplus >= 201603L
       #define exprtk_fallthrough [[fallthrough]];
+<<<<<<< Updated upstream
    #elif __cplusplus >= 201103L
       #define exprtk_fallthrough [[gnu::fallthrough]];
    #else
@@ -86,6 +91,15 @@ namespace exprtk
       #define exprtk_fallthrough __attribute__ ((fallthrough));
       #else
       #define exprtk_fallthrough
+=======
+   #elif (__cplusplus >= 201103L) && (defined(__GNUC__) && !defined(__clang__))
+      #define exprtk_fallthrough [[gnu::fallthrough]];
+   #else
+      #ifndef _MSC_VER
+         #define exprtk_fallthrough __attribute__ ((fallthrough));
+      #else
+         #define exprtk_fallthrough
+>>>>>>> Stashed changes
       #endif
    #endif
 
@@ -274,7 +288,8 @@ namespace exprtk
          return s[s.size() - 1];
       }
 
-      inline std::string to_str(int i)
+      template <typename SignedType>
+      inline std::string to_str_impl(SignedType i)
       {
          if (0 == i)
             return std::string("0");
@@ -298,9 +313,14 @@ namespace exprtk
          return result;
       }
 
+      inline std::string to_str(int i)
+      {
+         return to_str_impl(i);
+      }
+
       inline std::string to_str(std::size_t i)
       {
-         return to_str(static_cast<int>(i));
+         return to_str_impl(static_cast<long long int>(i));
       }
 
       inline bool is_hex_digit(const uchar_t digit)
@@ -315,7 +335,7 @@ namespace exprtk
          if (('0' <= h) && (h <= '9'))
             return (h - '0');
          else
-            return static_cast<uchar_t>(std::toupper(h) - 'A');
+            return static_cast<uchar_t>(std::toupper(h) - 'A' + 10);
       }
 
       template <typename Iterator>
@@ -336,8 +356,9 @@ namespace exprtk
             return false;
          }
 
-         result = hex_to_bin(static_cast<uchar_t>(*(itr + 2))) << 4 |
-                  hex_to_bin(static_cast<uchar_t>(*(itr + 3))) ;
+         result = static_cast<char_t>(
+                     hex_to_bin(static_cast<uchar_t>(*(itr + 2))) << 4 |
+                     hex_to_bin(static_cast<uchar_t>(*(itr + 3)))) ;
 
          return true;
       }
@@ -949,22 +970,6 @@ namespace exprtk
             }
 
             template <typename T>
-            inline T expm1_impl(const T v, real_type_tag)
-            {
-               // return std::expm1<T>(v);
-               if (abs_impl(v,real_type_tag()) < T(0.00001))
-                  return v + (T(0.5) * v * v);
-               else
-                  return std::exp(v) - T(1);
-            }
-
-            template <typename T>
-            inline T expm1_impl(const T v, int_type_tag)
-            {
-               return T(std::exp<double>(v)) - T(1);
-            }
-
-            template <typename T>
             inline T nequal_impl(const T v0, const T v1, real_type_tag)
             {
                typedef real_type_tag rtg;
@@ -1022,6 +1027,7 @@ namespace exprtk
             }
 
             template <typename T>
+<<<<<<< Updated upstream
             inline T log1p_impl(const T v, real_type_tag)
             {
                if (v > T(-1))
@@ -1039,11 +1045,18 @@ namespace exprtk
 
             template <typename T>
             inline T log1p_impl(const T v, int_type_tag)
+=======
+            inline T root_impl(const T v0, const T v1, real_type_tag)
+>>>>>>> Stashed changes
             {
-               if (v > T(-1))
+               if (v0 < T(0))
                {
-                  return std::log(T(1) + v);
+                  return (v1 == trunc_impl(v1, real_type_tag())) &&
+                         (modulus_impl(v1, T(2), real_type_tag()) != T(0)) ?
+                         -std::pow(abs_impl(v0, real_type_tag()), T(1) / v1) :
+                          std::numeric_limits<T>::quiet_NaN();
                }
+<<<<<<< Updated upstream
 
                return std::numeric_limits<T>::quiet_NaN();
             }
@@ -1055,11 +1068,10 @@ namespace exprtk
                   return std::numeric_limits<T>::quiet_NaN();
 
                const std::size_t n = static_cast<std::size_t>(v1);
+=======
+>>>>>>> Stashed changes
 
-               if ((v0 < T(0)) && (0 == (n % 2)))
-                  return std::numeric_limits<T>::quiet_NaN();
-
-               return std::pow(v0, T(1) / n);
+               return std::pow(v0, T(1) / v1);
             }
 
             template <typename T>
@@ -1356,6 +1368,39 @@ namespace exprtk
             {
                return std::atanh(v);
             }
+<<<<<<< Updated upstream
+=======
+
+            template <typename T>
+            inline T trunc_impl(const T v, real_type_tag)
+            {
+               return std::trunc(v);
+            }
+
+            template <typename T>
+            inline T expm1_impl(const T v, real_type_tag)
+            {
+               return std::expm1(v);
+            }
+
+            template <typename T>
+            inline T expm1_impl(const T v, int_type_tag)
+            {
+               return std::expm1(v);
+            }
+
+            template <typename T>
+            inline T log1p_impl(const T v, real_type_tag)
+            {
+               return std::log1p(v);
+            }
+
+            template <typename T>
+            inline T log1p_impl(const T v, int_type_tag)
+            {
+               return std::log1p(v);
+            }
+>>>>>>> Stashed changes
             #else
             template <typename T>
             inline T acosh_impl(const T v, real_type_tag)
@@ -1374,6 +1419,57 @@ namespace exprtk
             {
                return (std::log(T(1) + v) - std::log(T(1) - v)) / T(2);
             }
+<<<<<<< Updated upstream
+=======
+
+            template <typename T>
+            inline T trunc_impl(const T v, real_type_tag)
+            {
+               return T(static_cast<long long>(v));
+            }
+
+            template <typename T>
+            inline T expm1_impl(const T v, real_type_tag)
+            {
+               if (abs_impl(v,real_type_tag()) < T(0.00001))
+                  return v + (T(0.5) * v * v);
+               else
+                  return std::exp(v) - T(1);
+            }
+
+            template <typename T>
+            inline T expm1_impl(const T v, int_type_tag)
+            {
+               return T(std::exp<double>(v)) - T(1);
+            }
+
+            template <typename T>
+            inline T log1p_impl(const T v, real_type_tag)
+            {
+               if (v > T(-1))
+               {
+                  if (abs_impl(v,real_type_tag()) > T(0.0001))
+                  {
+                     return std::log(T(1) + v);
+                  }
+                  else
+                     return (T(-0.5) * v + T(1)) * v;
+               }
+
+               return std::numeric_limits<T>::quiet_NaN();
+            }
+
+            template <typename T>
+            inline T log1p_impl(const T v, int_type_tag)
+            {
+               if (v > T(-1))
+               {
+                  return std::log(T(1) + v);
+               }
+
+               return std::numeric_limits<T>::quiet_NaN();
+            }
+>>>>>>> Stashed changes
             #endif
 
             template <typename T> inline T  acos_impl(const T v, real_type_tag) { return std::acos (v); }
@@ -1402,8 +1498,7 @@ namespace exprtk
             template <typename T> inline T   d2g_impl(const T v, real_type_tag) { return (v * T(10.0/9.0)); }
             template <typename T> inline T   g2d_impl(const T v, real_type_tag) { return (v * T(9.0/10.0)); }
             template <typename T> inline T  notl_impl(const T v, real_type_tag) { return (std::not_equal_to<T>()(T(0),v) ? T(0) : T(1)); }
-            template <typename T> inline T  frac_impl(const T v, real_type_tag) { return (v - static_cast<long long>(v)); }
-            template <typename T> inline T trunc_impl(const T v, real_type_tag) { return T(static_cast<long long>(v));    }
+            template <typename T> inline T  frac_impl(const T v, real_type_tag) { return (v - trunc_impl(v,real_type_tag())); }
 
             template <typename T> inline T   const_pi_impl(real_type_tag) { return T(numeric::constant::pi);            }
             template <typename T> inline T    const_e_impl(real_type_tag) { return T(numeric::constant::e);             }
@@ -1832,7 +1927,7 @@ namespace exprtk
                case 4 : exprtk_process_digit
                case 3 : exprtk_process_digit
                case 2 : exprtk_process_digit
-               case 1 : if ((digit = (*itr - zero))>= 10)
+               case 1 : if ((digit = (*itr - zero)) >= 10)
                         {
                            digit = 0;
                            return_result = false;
@@ -2040,7 +2135,8 @@ namespace exprtk
                   {
                      if (end == ++itr)
                         return false;
-                     else if (('I' <= (*itr)) && ((*itr) <= 'n'))
+
+                     if (('I' <= (*itr)) && ((*itr) <= 'n'))
                      {
                         if (('i' == (*itr)) || ('I' == (*itr)))
                         {
@@ -2205,8 +2301,12 @@ namespace exprtk
       {}
 
       virtual void handle_assert(const assert_context& /*context*/)
+<<<<<<< Updated upstream
       {
       }
+=======
+      {}
+>>>>>>> Stashed changes
    };
 
    typedef assert_check* assert_check_ptr;
@@ -2337,7 +2437,7 @@ namespace exprtk
             return (*this);
          }
 
-         static inline std::string to_str(token_type t)
+         static inline std::string to_str(const token_type t)
          {
             switch (t)
             {
@@ -2394,18 +2494,22 @@ namespace exprtk
                default      : return "UNKNOWN";
             }
 
+<<<<<<< Updated upstream
             return "UNKNOWN";
+=======
+            #if !defined(_MSC_VER) && !defined(__NVCOMPILER)
+            return "UNKNOWN";
+            #endif
+>>>>>>> Stashed changes
          }
 
          inline bool is_error() const
          {
-            return (
-                     (e_error      == type) ||
-                     (e_err_symbol == type) ||
-                     (e_err_number == type) ||
-                     (e_err_string == type) ||
-                     (e_err_sfunc  == type)
-                   );
+            return (e_error      == type) ||
+                   (e_err_symbol == type) ||
+                   (e_err_number == type) ||
+                   (e_err_string == type) ||
+                   (e_err_sfunc  == type) ;
          }
 
          token_type type;
@@ -2650,6 +2754,14 @@ namespace exprtk
 
             while (!is_end(s_itr_))
             {
+               if (details::is_invalid(*s_itr_))
+               {
+                  token_t t;
+                  t.set_error(token::e_error, s_itr_, s_itr_ + 1, base_itr_);
+                  token_list_.push_back(t);
+                  return;
+               }
+
                if ((1 == mode) && test::comment_end(*s_itr_, 0, mode))
                {
                   ++s_itr_;
@@ -3126,7 +3238,11 @@ namespace exprtk
       {
       public:
 
+<<<<<<< Updated upstream
          virtual ~token_scanner()
+=======
+         virtual ~token_scanner() exprtk_override
+>>>>>>> Stashed changes
          {}
 
          explicit token_scanner(const std::size_t& stride)
@@ -3197,6 +3313,8 @@ namespace exprtk
                                  }
                               }
                               break;
+
+                     default: continue;
                   }
                }
             }
@@ -3752,7 +3870,7 @@ namespace exprtk
                   return state_;
             }
 
-            lexer::token error_token()
+            lexer::token error_token() const
             {
                return error_token_;
             }
@@ -3855,7 +3973,7 @@ namespace exprtk
                return error_list_.size();
             }
 
-            std::size_t error_index(const std::size_t& i)
+            std::size_t error_index(const std::size_t& i) const
             {
                if (i < error_list_.size())
                   return error_list_[i];
@@ -4652,6 +4770,17 @@ namespace exprtk
                        static_cast<int>(data_ref_.size())));
       }
 
+<<<<<<< Updated upstream
+=======
+      void set_size_ref(std::size_t* size_ref)
+      {
+         size_ref_.push_back(size_ref);
+         exprtk_debug(("vector_view::set_size_ref() - size_ref: %p size_ref_.size(): %d\n",
+                       reinterpret_cast<void*>(size_ref),
+                       static_cast<int>(size_ref_.size())));
+      }
+
+>>>>>>> Stashed changes
       void remove_ref(data_ptr_t* data_ref)
       {
          data_ref_.erase(
@@ -4662,6 +4791,19 @@ namespace exprtk
                        static_cast<int>(data_ref_.size())));
       }
 
+<<<<<<< Updated upstream
+=======
+      void remove_size_ref(std::size_t* size_ref)
+      {
+         size_ref_.erase(
+            std::remove(size_ref_.begin(), size_ref_.end(), size_ref),
+            size_ref_.end());
+         exprtk_debug(("vector_view::remove_size_ref() - size_ref: %p size_ref_.size(): %d\n",
+                       reinterpret_cast<void*>(size_ref),
+                       static_cast<int>(size_ref_.size())));
+      }
+
+>>>>>>> Stashed changes
       bool set_size(const std::size_t new_size)
       {
          if ((new_size > 0) && (new_size <= base_size_))
@@ -4670,6 +4812,18 @@ namespace exprtk
             exprtk_debug(("vector_view::set_size() - data_: %p size: %lu\n",
                           reinterpret_cast<void*>(data_),
                           size_));
+<<<<<<< Updated upstream
+=======
+
+            if (!size_ref_.empty())
+            {
+               for (std::size_t i = 0; i < size_ref_.size(); ++i)
+               {
+                  (*size_ref_[i]) = new_size;
+               }
+            }
+
+>>>>>>> Stashed changes
             return true;
          }
 
@@ -4685,6 +4839,7 @@ namespace exprtk
       std::size_t size_;
       data_ptr_t  data_;
       std::vector<data_ptr_t*> data_ref_;
+      std::vector<std::size_t*> size_ref_;
    };
 
    template <typename T>
@@ -4702,6 +4857,7 @@ namespace exprtk
    }
 
    template <typename T> class results_context;
+   namespace  details { template <typename T> class vector_interface; }
 
    template <typename T>
    struct type_store
@@ -4718,6 +4874,7 @@ namespace exprtk
       : data(0)
       , size(0)
       , type(e_unknown)
+      , ivec(0)
       {}
 
       union
@@ -4726,8 +4883,11 @@ namespace exprtk
          T*    vec_data;
       };
 
+      typedef details::vector_interface<T>* ivec_t;
+
       std::size_t size;
       store_type  type;
+      ivec_t      ivec;
 
       class parameter_list
       {
@@ -4775,6 +4935,26 @@ namespace exprtk
          inline const type_store& back() const
          {
             return parameter_list_.back();
+         }
+
+         inline typename std::vector<type_store>::const_iterator begin() const
+         {
+            return parameter_list_.begin();
+         }
+
+         inline typename std::vector<type_store>::const_iterator end() const
+         {
+            return parameter_list_.end();
+         }
+
+         inline typename std::vector<type_store>::iterator begin()
+         {
+            return parameter_list_.begin();
+         }
+
+         inline typename std::vector<type_store>::iterator end()
+         {
+            return parameter_list_.end();
          }
 
       private:
@@ -5809,6 +5989,24 @@ namespace exprtk
       }
 
       template <typename T>
+      inline bool amalgamated_vecop(const expression_node<T>* node)
+      {
+         if (node)
+         {
+            switch (node->type())
+            {
+               case details::expression_node<T>::e_vecvecarith :
+               case details::expression_node<T>::e_vecvalarith :
+               case details::expression_node<T>::e_valvecarith :
+               case details::expression_node<T>::e_vecunaryop  : return true;
+               default                                         : return false;
+            }
+         }
+         else
+            return false;
+      }
+
+      template <typename T>
       inline bool is_constant_node(const expression_node<T>* node)
       {
          return node &&
@@ -6342,6 +6540,15 @@ namespace exprtk
             virtual void remove_ref(value_ptr*)
             {}
 
+<<<<<<< Updated upstream
+=======
+            virtual void set_size_ref(std::size_t*)
+            {}
+
+            virtual void remove_size_ref(std::size_t*)
+            {}
+
+>>>>>>> Stashed changes
             virtual vector_view<Type>* rebaseable_instance()
             {
                return reinterpret_cast<vector_view<Type>*>(0);
@@ -6434,7 +6641,7 @@ namespace exprtk
 
             typedef exprtk::vector_view<Type> vector_view_t;
 
-            vector_view_impl(vector_view_t& vec_view)
+            explicit vector_view_impl(vector_view_t& vec_view)
             : vec_view_(vec_view)
             {
                assert(vec_view_.size() > 0);
@@ -6501,7 +6708,11 @@ namespace exprtk
                assert(size_ <= vector_base_size());
             }
 
+<<<<<<< Updated upstream
             virtual ~resizable_vector_impl()
+=======
+            virtual ~resizable_vector_impl() exprtk_override
+>>>>>>> Stashed changes
             {}
 
          protected:
@@ -6595,12 +6806,34 @@ namespace exprtk
             }
          }
 
+<<<<<<< Updated upstream
+=======
+         void set_size_ref(std::size_t* ref)
+         {
+            if (rebaseable())
+            {
+               vector_holder_base_->set_size_ref(ref);
+            }
+         }
+
+>>>>>>> Stashed changes
          void remove_ref(value_ptr* ref)
          {
             if (rebaseable())
             {
                vector_holder_base_->remove_ref(ref);
             }
+<<<<<<< Updated upstream
+=======
+         }
+
+         void remove_size_ref(std::size_t* ref)
+         {
+            if (rebaseable())
+            {
+               vector_holder_base_->remove_size_ref(ref);
+            }
+>>>>>>> Stashed changes
          }
 
          bool rebaseable() const
@@ -8546,7 +8779,11 @@ namespace exprtk
          , vds_(vds)
          {}
 
+<<<<<<< Updated upstream
         ~vector_node()
+=======
+        ~vector_node() exprtk_override
+>>>>>>> Stashed changes
          {
             assert(valid());
             vector_holder_->remove_ref(&vds_.ref());
@@ -8626,7 +8863,11 @@ namespace exprtk
          : vector_holder_(vh)
          {}
 
+<<<<<<< Updated upstream
         ~vector_size_node()
+=======
+        ~vector_size_node() exprtk_override
+>>>>>>> Stashed changes
          {
             assert(valid());
          }
@@ -8745,6 +8986,8 @@ namespace exprtk
       class vector_celem_node exprtk_final
                               : public expression_node<T>
                               , public ivariable      <T>
+<<<<<<< Updated upstream
+=======
       {
       public:
 
@@ -9032,15 +9275,25 @@ namespace exprtk
       class rebasevector_elem_node exprtk_final
                                    : public expression_node<T>
                                    , public ivariable      <T>
+>>>>>>> Stashed changes
       {
       public:
 
          typedef expression_node<T>*            expression_ptr;
          typedef vector_holder<T>               vector_holder_t;
          typedef vector_holder_t*               vector_holder_ptr;
-         typedef vec_data_store<T>              vds_t;
          typedef std::pair<expression_ptr,bool> branch_t;
 
+<<<<<<< Updated upstream
+         vector_celem_node(expression_ptr vec_node,
+                           const std::size_t index,
+                           vector_holder_ptr vec_holder)
+         : index_(index)
+         , vector_holder_(vec_holder)
+         , vector_base_((*vec_holder)[0])
+         {
+            construct_branch_pair(vector_node_, vec_node);
+=======
          rebasevector_elem_node(expression_ptr vec_node,
                                 expression_ptr index,
                                 vector_holder_ptr vec_holder)
@@ -9048,6 +9301,7 @@ namespace exprtk
          {
             construct_branch_pair(vector_node_, vec_node);
             construct_branch_pair(index_      , index   );
+>>>>>>> Stashed changes
             assert(valid());
          }
 
@@ -9068,7 +9322,15 @@ namespace exprtk
 
          inline typename expression_node<T>::node_type type() const exprtk_override
          {
-            return expression_node<T>::e_rbvecelem;
+            return expression_node<T>::e_veccelem;
+         }
+
+         inline bool valid() const exprtk_override
+         {
+            return
+               vector_holder_     &&
+               vector_node_.first &&
+               vector_node_.first->valid();
          }
 
          inline bool valid() const exprtk_override
@@ -9089,13 +9351,20 @@ namespace exprtk
          void collect_nodes(typename expression_node<T>::noderef_list_t& node_delete_list) exprtk_override
          {
             expression_node<T>::ndb_t::collect(vector_node_, node_delete_list);
+<<<<<<< Updated upstream
+=======
             expression_node<T>::ndb_t::collect(index_,       node_delete_list);
+>>>>>>> Stashed changes
          }
 
          std::size_t node_depth() const exprtk_override
          {
+<<<<<<< Updated upstream
+            return expression_node<T>::ndb_t::compute_node_depth(vector_node_);
+=======
             return expression_node<T>::ndb_t::compute_node_depth
                (vector_node_, index_);
+>>>>>>> Stashed changes
          }
 
       private:
@@ -9103,6 +9372,40 @@ namespace exprtk
          inline T* access_vector() const
          {
             vector_node_.first->value();
+<<<<<<< Updated upstream
+            return (vector_base_ + index_);
+         }
+
+         const std::size_t index_;
+         vector_holder_ptr vector_holder_;
+         T* vector_base_;
+         branch_t vector_node_;
+      };
+
+      template <typename T>
+      class vector_elem_rtc_node exprtk_final
+                                 : public expression_node<T>
+                                 , public ivariable      <T>
+      {
+      public:
+
+         typedef expression_node<T>*            expression_ptr;
+         typedef vector_holder<T>               vector_holder_t;
+         typedef vector_holder_t*               vector_holder_ptr;
+         typedef std::pair<expression_ptr,bool> branch_t;
+
+         vector_elem_rtc_node(expression_ptr vec_node,
+                              expression_ptr index,
+                              vector_holder_ptr vec_holder,
+                              vector_access_runtime_check_ptr vec_rt_chk)
+         : vector_holder_(vec_holder)
+         , vector_base_((*vec_holder)[0])
+         , vec_rt_chk_(vec_rt_chk)
+         , max_vector_index_(vector_holder_->size() - 1)
+         {
+            construct_branch_pair(vector_node_, vec_node);
+            construct_branch_pair(index_      , index   );
+=======
             return (vector_holder_->data() + details::numeric::to_uint64(index_.first->value()));
          }
 
@@ -9130,28 +9433,51 @@ namespace exprtk
          , vector_holder_(vec_holder)
          {
             construct_branch_pair(vector_node_, vec_node);
+>>>>>>> Stashed changes
             assert(valid());
          }
 
          inline T value() const exprtk_override
          {
+<<<<<<< Updated upstream
+            return *access_vector();
+=======
             vector_node_.first->value();
-            return ref();;
+            return ref();
+>>>>>>> Stashed changes
          }
 
          inline T& ref() exprtk_override
          {
+<<<<<<< Updated upstream
+            return *access_vector();
+=======
             return *(vector_holder_->data() + index_);
+>>>>>>> Stashed changes
          }
 
          inline const T& ref() const exprtk_override
          {
+<<<<<<< Updated upstream
+            return *access_vector();
+=======
             return *(vector_holder_->data() + index_);
+>>>>>>> Stashed changes
          }
 
          inline typename expression_node<T>::node_type type() const exprtk_override
          {
-            return expression_node<T>::e_rbveccelem;
+            return expression_node<T>::e_vecelemrtc;
+         }
+
+         inline bool valid() const exprtk_override
+         {
+            return
+               vector_holder_        &&
+               index_.first          &&
+               vector_node_.first    &&
+               index_.first->valid() &&
+               vector_node_.first->valid();
          }
 
          inline bool valid() const exprtk_override
@@ -9345,6 +9671,1159 @@ namespace exprtk
          }
 
          void collect_nodes(typename expression_node<T>::noderef_list_t& node_delete_list) exprtk_override
+         {
+            expression_node<T>::ndb_t::collect(vector_node_, node_delete_list);
+<<<<<<< Updated upstream
+            expression_node<T>::ndb_t::collect(index_,       node_delete_list);
+=======
+>>>>>>> Stashed changes
+         }
+
+         std::size_t node_depth() const exprtk_override
+         {
+<<<<<<< Updated upstream
+            return expression_node<T>::ndb_t::compute_node_depth
+               (vector_node_, index_);
+=======
+            return expression_node<T>::ndb_t::compute_node_depth(vector_node_);
+>>>>>>> Stashed changes
+         }
+
+      private:
+
+         inline T* access_vector() const
+         {
+<<<<<<< Updated upstream
+            const _uint64_t index = details::numeric::to_uint64(index_.first->value());
+            vector_node_.first->value();
+
+            if (index <= max_vector_index_)
+            {
+               return (vector_holder_->data() + index);
+=======
+            vector_node_.first->value();
+
+            if (index_ <= vector_holder_->size() - 1)
+            {
+               return (vector_holder_->data() + index_);
+>>>>>>> Stashed changes
+            }
+
+            assert(vec_rt_chk_);
+
+            vector_access_runtime_check::violation_context context;
+            context.base_ptr   = reinterpret_cast<void*>(vector_base_);
+            context.end_ptr    = reinterpret_cast<void*>(vector_base_ + vector_holder_->size());
+<<<<<<< Updated upstream
+            context.access_ptr = reinterpret_cast<void*>(vector_base_ + index);
+=======
+            context.access_ptr = reinterpret_cast<void*>(vector_base_ + index_);
+>>>>>>> Stashed changes
+            context.type_size  = sizeof(T);
+
+            return vec_rt_chk_->handle_runtime_violation(context) ?
+               reinterpret_cast<T*>(context.access_ptr) :
+               vector_base_ ;
+         }
+
+<<<<<<< Updated upstream
+         vector_holder_ptr vector_holder_;
+         T*                vector_base_;
+         branch_t          vector_node_;
+         branch_t          index_;
+         vector_access_runtime_check_ptr vec_rt_chk_;
+         const std::size_t max_vector_index_;
+      };
+
+      template <typename T>
+      class vector_celem_rtc_node exprtk_final
+                                 : public expression_node<T>
+                                 , public ivariable      <T>
+=======
+         const std::size_t index_;
+         vector_holder_ptr vector_holder_;
+         T*                vector_base_;
+         branch_t          vector_node_;
+         vector_access_runtime_check_ptr vec_rt_chk_;
+      };
+
+      template <typename T>
+      class vector_initialisation_node exprtk_final : public expression_node<T>
+>>>>>>> Stashed changes
+      {
+      public:
+
+         typedef expression_node<T>*            expression_ptr;
+         typedef vector_holder<T>               vector_holder_t;
+         typedef vector_holder_t*               vector_holder_ptr;
+         typedef std::pair<expression_ptr,bool> branch_t;
+
+<<<<<<< Updated upstream
+         vector_celem_rtc_node(expression_ptr vec_node,
+                               const std::size_t index,
+                               vector_holder_ptr vec_holder,
+                               vector_access_runtime_check_ptr vec_rt_chk)
+         : index_(index)
+         , max_vector_index_(vec_holder->size() - 1)
+         , vector_holder_(vec_holder)
+         , vector_base_((*vec_holder)[0])
+         , vec_rt_chk_(vec_rt_chk)
+         {
+            construct_branch_pair(vector_node_, vec_node);
+            assert(valid());
+=======
+         vector_initialisation_node(T* vector_base,
+                                    const std::size_t& size,
+                                    const std::vector<expression_ptr>& initialiser_list,
+                                    const bool single_value_initialse)
+         : vector_base_(vector_base)
+         , initialiser_list_(initialiser_list)
+         , size_(size)
+         , single_value_initialse_(single_value_initialse)
+         , zero_value_initialse_(false)
+         , const_nonzero_literal_value_initialse_(false)
+         , single_initialiser_value_(T(0))
+         {
+            if (single_value_initialse_)
+            {
+               if (initialiser_list_.empty())
+                  zero_value_initialse_ = true;
+               else if (
+                         (initialiser_list_.size() == 1) &&
+                         details::is_constant_node(initialiser_list_[0]) &&
+                         (T(0) == initialiser_list_[0]->value())
+                       )
+               {
+                  zero_value_initialse_ = true;
+               }
+               else
+               {
+                  assert(initialiser_list_.size() == 1);
+
+                  if (details::is_constant_node(initialiser_list_[0]))
+                  {
+                     const_nonzero_literal_value_initialse_ = true;
+                     single_initialiser_value_ = initialiser_list_[0]->value();
+                     assert(T(0) != single_initialiser_value_);
+                  }
+               }
+            }
+>>>>>>> Stashed changes
+         }
+
+         inline T value() const exprtk_override
+         {
+<<<<<<< Updated upstream
+            return *access_vector();
+         }
+
+         inline T& ref() exprtk_override
+         {
+            return *access_vector();
+         }
+=======
+            if (single_value_initialse_)
+            {
+               if (zero_value_initialse_)
+               {
+                  details::set_zero_value(vector_base_, size_);
+               }
+               else if (const_nonzero_literal_value_initialse_)
+               {
+                  for (std::size_t i = 0; i < size_; ++i)
+                  {
+                     *(vector_base_ + i) = single_initialiser_value_;
+                  }
+               }
+               else
+               {
+                  for (std::size_t i = 0; i < size_; ++i)
+                  {
+                     *(vector_base_ + i) = initialiser_list_[0]->value();
+                  }
+               }
+            }
+            else
+            {
+               const std::size_t initialiser_list_size = initialiser_list_.size();
+
+               for (std::size_t i = 0; i < initialiser_list_size; ++i)
+               {
+                  *(vector_base_ + i) = initialiser_list_[i]->value();
+               }
+
+               if (initialiser_list_size < size_)
+               {
+                  details::set_zero_value(
+                     vector_base_ + initialiser_list_size,
+                     (size_ - initialiser_list_size));
+               }
+            }
+>>>>>>> Stashed changes
+
+         inline const T& ref() const exprtk_override
+         {
+            return *access_vector();
+         }
+
+         inline typename expression_node<T>::node_type type() const exprtk_override
+         {
+<<<<<<< Updated upstream
+            return expression_node<T>::e_veccelemrtc;
+=======
+            return expression_node<T>::e_vecinit;
+>>>>>>> Stashed changes
+         }
+
+         inline bool valid() const exprtk_override
+         {
+<<<<<<< Updated upstream
+            return
+               vector_holder_     &&
+               vector_node_.first &&
+               vector_node_.first->valid();
+         }
+
+         inline vector_holder_t& vec_holder()
+         {
+            return (*vector_holder_);
+=======
+            return vector_base_;
+>>>>>>> Stashed changes
+         }
+
+         void collect_nodes(typename expression_node<T>::noderef_list_t& node_delete_list) exprtk_override
+         {
+            expression_node<T>::ndb_t::collect(vector_node_, node_delete_list);
+         }
+
+         std::size_t node_depth() const exprtk_override
+         {
+            return expression_node<T>::ndb_t::compute_node_depth(vector_node_);
+         }
+
+      private:
+
+<<<<<<< Updated upstream
+         inline T* access_vector() const
+         {
+            vector_node_.first->value();
+
+            if (index_ <= max_vector_index_)
+            {
+               return (vector_holder_->data() + index_);
+            }
+
+            assert(vec_rt_chk_);
+
+            vector_access_runtime_check::violation_context context;
+            context.base_ptr   = reinterpret_cast<void*>(vector_base_);
+            context.end_ptr    = reinterpret_cast<void*>(vector_base_ + vector_holder_->size());
+            context.access_ptr = reinterpret_cast<void*>(vector_base_ + index_);
+            context.type_size  = sizeof(T);
+
+            return vec_rt_chk_->handle_runtime_violation(context) ?
+               reinterpret_cast<T*>(context.access_ptr) :
+               vector_base_ ;
+         }
+
+         const std::size_t index_;
+         const std::size_t max_vector_index_;
+         vector_holder_ptr vector_holder_;
+         T*                vector_base_;
+         branch_t          vector_node_;
+         vector_access_runtime_check_ptr vec_rt_chk_;
+=======
+         vector_initialisation_node(const vector_initialisation_node<T>&) exprtk_delete;
+         vector_initialisation_node<T>& operator=(const vector_initialisation_node<T>&) exprtk_delete;
+
+         mutable T* vector_base_;
+         std::vector<expression_ptr> initialiser_list_;
+         const std::size_t size_;
+         const bool single_value_initialse_;
+         bool zero_value_initialse_;
+         bool const_nonzero_literal_value_initialse_;
+         T single_initialiser_value_;
+      };
+
+      template <typename T>
+      class vector_init_zero_value_node exprtk_final : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         vector_init_zero_value_node(T* vector_base,
+                                     const std::size_t& size,
+                                     const std::vector<expression_ptr>& initialiser_list)
+         : vector_base_(vector_base)
+         , size_(size)
+         , initialiser_list_(initialiser_list)
+         {}
+
+         inline T value() const exprtk_override
+         {
+            details::set_zero_value(vector_base_, size_);
+            return *(vector_base_);
+         }
+
+         inline typename expression_node<T>::node_type type() const exprtk_override
+         {
+            return expression_node<T>::e_vecinit;
+         }
+
+         inline bool valid() const exprtk_override
+         {
+            return vector_base_;
+         }
+
+         void collect_nodes(typename expression_node<T>::noderef_list_t& node_delete_list) exprtk_override
+         {
+            expression_node<T>::ndb_t::collect(initialiser_list_, node_delete_list);
+         }
+
+         std::size_t node_depth() const exprtk_override
+         {
+            return expression_node<T>::ndb_t::compute_node_depth(initialiser_list_);
+         }
+
+      private:
+
+         vector_init_zero_value_node(const vector_init_zero_value_node<T>&) exprtk_delete;
+         vector_init_zero_value_node<T>& operator=(const vector_init_zero_value_node<T>&) exprtk_delete;
+
+         mutable T* vector_base_;
+         const std::size_t size_;
+         std::vector<expression_ptr> initialiser_list_;
+      };
+
+      template <typename T>
+      class vector_init_single_constvalue_node exprtk_final : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         vector_init_single_constvalue_node(T* vector_base,
+                                            const std::size_t& size,
+                                            const std::vector<expression_ptr>& initialiser_list)
+         : vector_base_(vector_base)
+         , size_(size)
+         , initialiser_list_(initialiser_list)
+         {
+            single_initialiser_value_ = initialiser_list_[0]->value();
+            assert(valid());
+         }
+
+         inline T value() const exprtk_override
+         {
+            for (std::size_t i = 0; i < size_; ++i)
+            {
+               *(vector_base_ + i) = single_initialiser_value_;
+            }
+
+            return *(vector_base_);
+         }
+
+         inline typename expression_node<T>::node_type type() const exprtk_override
+         {
+            return expression_node<T>::e_vecinit;
+         }
+
+         inline bool valid() const exprtk_override
+         {
+            return vector_base_ &&
+                   (initialiser_list_.size() == 1) &&
+                   (details::is_constant_node(initialiser_list_[0])) &&
+                   (single_initialiser_value_ != T(0));
+         }
+
+         void collect_nodes(typename expression_node<T>::noderef_list_t& node_delete_list) exprtk_override
+         {
+            expression_node<T>::ndb_t::collect(initialiser_list_, node_delete_list);
+         }
+
+         std::size_t node_depth() const exprtk_override
+         {
+            return expression_node<T>::ndb_t::compute_node_depth(initialiser_list_);
+         }
+
+      private:
+
+         vector_init_single_constvalue_node(const vector_init_single_constvalue_node<T>&) exprtk_delete;
+         vector_init_single_constvalue_node<T>& operator=(const vector_init_single_constvalue_node<T>&) exprtk_delete;
+
+         mutable T* vector_base_;
+         const std::size_t size_;
+         std::vector<expression_ptr> initialiser_list_;
+         T single_initialiser_value_;
+      };
+
+      template <typename T>
+      class vector_init_single_value_node exprtk_final : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         vector_init_single_value_node(T* vector_base,
+                                       const std::size_t& size,
+                                       const std::vector<expression_ptr>& initialiser_list)
+         : vector_base_(vector_base)
+         , size_(size)
+         , initialiser_list_(initialiser_list)
+         {
+            assert(valid());
+         }
+
+         inline T value() const exprtk_override
+         {
+            expression_node<T>& node = *initialiser_list_[0];
+
+            for (std::size_t i = 0; i < size_; ++i)
+            {
+               *(vector_base_ + i) = node.value();
+            }
+
+            return *(vector_base_);
+         }
+
+         inline typename expression_node<T>::node_type type() const exprtk_override
+         {
+            return expression_node<T>::e_vecinit;
+         }
+
+         inline bool valid() const exprtk_override
+         {
+            return vector_base_ &&
+                   (initialiser_list_.size() == 1) &&
+                   !details::is_constant_node(initialiser_list_[0]);
+         }
+
+         void collect_nodes(typename expression_node<T>::noderef_list_t& node_delete_list) exprtk_override
+         {
+            expression_node<T>::ndb_t::collect(initialiser_list_, node_delete_list);
+         }
+
+         std::size_t node_depth() const exprtk_override
+         {
+            return expression_node<T>::ndb_t::compute_node_depth(initialiser_list_);
+         }
+
+      private:
+
+         vector_init_single_value_node(const vector_init_single_value_node<T>&) exprtk_delete;
+         vector_init_single_value_node<T>& operator=(const vector_init_single_value_node<T>&) exprtk_delete;
+
+         mutable T* vector_base_;
+         const std::size_t size_;
+         std::vector<expression_ptr> initialiser_list_;
+      };
+
+      template <typename T>
+      class vector_init_iota_constconst_node exprtk_final : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         vector_init_iota_constconst_node(T* vector_base,
+                                          const std::size_t& size,
+                                          const std::vector<expression_ptr>& initialiser_list)
+         : vector_base_(vector_base)
+         , size_(size)
+         , initialiser_list_(initialiser_list)
+         {
+            base_value_      = initialiser_list_[0]->value();
+            increment_value_ = initialiser_list_[1]->value();
+
+            assert(valid());
+         }
+
+         inline T value() const exprtk_override
+         {
+            T value = base_value_;
+
+            for (std::size_t i = 0; i < size_; ++i, value += increment_value_)
+            {
+               *(vector_base_ + i) = value;
+            }
+
+            return *(vector_base_);
+         }
+
+         inline typename expression_node<T>::node_type type() const exprtk_override
+         {
+            return expression_node<T>::e_vecinit;
+         }
+
+         inline bool valid() const exprtk_override
+         {
+            return vector_base_ &&
+                   (initialiser_list_.size() == 2) &&
+                   (details::is_constant_node(initialiser_list_[0])) &&
+                   (details::is_constant_node(initialiser_list_[1])) ;
+         }
+
+         void collect_nodes(typename expression_node<T>::noderef_list_t& node_delete_list) exprtk_override
+         {
+            expression_node<T>::ndb_t::collect(initialiser_list_, node_delete_list);
+         }
+
+         std::size_t node_depth() const exprtk_override
+         {
+            return expression_node<T>::ndb_t::compute_node_depth(initialiser_list_);
+         }
+
+      private:
+
+         vector_init_iota_constconst_node(const vector_init_iota_constconst_node<T>&) exprtk_delete;
+         vector_init_iota_constconst_node<T>& operator=(const vector_init_iota_constconst_node<T>&) exprtk_delete;
+
+         mutable T* vector_base_;
+         const std::size_t size_;
+         std::vector<expression_ptr> initialiser_list_;
+         T base_value_;
+         T increment_value_;
+      };
+
+      template <typename T>
+      class vector_init_iota_constnconst_node exprtk_final : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         vector_init_iota_constnconst_node(T* vector_base,
+                                           const std::size_t& size,
+                                           const std::vector<expression_ptr>& initialiser_list)
+         : vector_base_(vector_base)
+         , size_(size)
+         , initialiser_list_(initialiser_list)
+         {
+            assert(valid());
+            base_value_ = initialiser_list_[0]->value();
+         }
+
+         inline T value() const exprtk_override
+         {
+            T value = base_value_;
+            expression_node<T>& increment = *initialiser_list_[1];
+
+            for (std::size_t i = 0; i < size_; ++i, value += increment.value())
+            {
+               *(vector_base_ + i) = value;
+            }
+
+            return *(vector_base_);
+         }
+
+         inline typename expression_node<T>::node_type type() const exprtk_override
+         {
+            return expression_node<T>::e_vecinit;
+         }
+
+         inline bool valid() const exprtk_override
+         {
+            return vector_base_ &&
+                  (initialiser_list_.size() == 2) &&
+                  ( details::is_constant_node(initialiser_list_[0])) &&
+                  (!details::is_constant_node(initialiser_list_[1]));
+         }
+
+         void collect_nodes(typename expression_node<T>::noderef_list_t& node_delete_list) exprtk_override
+         {
+            expression_node<T>::ndb_t::collect(initialiser_list_, node_delete_list);
+         }
+
+         std::size_t node_depth() const exprtk_override
+         {
+            return expression_node<T>::ndb_t::compute_node_depth(initialiser_list_);
+         }
+
+      private:
+
+         vector_init_iota_constnconst_node(const vector_init_iota_constnconst_node<T>&) exprtk_delete;
+         vector_init_iota_constnconst_node<T>& operator=(const vector_init_iota_constnconst_node<T>&) exprtk_delete;
+
+         mutable T* vector_base_;
+         const std::size_t size_;
+         std::vector<expression_ptr> initialiser_list_;
+         T base_value_;
+      };
+
+      template <typename T>
+      class vector_init_iota_nconstconst_node exprtk_final : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         vector_init_iota_nconstconst_node(T* vector_base,
+                                           const std::size_t& size,
+                                           const std::vector<expression_ptr>& initialiser_list)
+         : vector_base_(vector_base)
+         , size_(size)
+         , initialiser_list_(initialiser_list)
+         {
+            assert(valid());
+         }
+
+         inline T value() const exprtk_override
+         {
+            T value = initialiser_list_[0]->value();
+            const T increment = initialiser_list_[1]->value();
+
+            for (std::size_t i = 0; i < size_; ++i, value += increment)
+            {
+               *(vector_base_ + i) = value;
+            }
+
+            return *(vector_base_);
+         }
+
+         inline typename expression_node<T>::node_type type() const exprtk_override
+         {
+            return expression_node<T>::e_vecinit;
+         }
+
+         inline bool valid() const exprtk_override
+         {
+            return vector_base_ &&
+                   (initialiser_list_.size() == 2) &&
+                   (!details::is_constant_node(initialiser_list_[0])) &&
+                   (details::is_constant_node(initialiser_list_[1]));
+         }
+
+         void collect_nodes(typename expression_node<T>::noderef_list_t& node_delete_list) exprtk_override
+         {
+            expression_node<T>::ndb_t::collect(initialiser_list_, node_delete_list);
+         }
+
+         std::size_t node_depth() const exprtk_override
+         {
+            return expression_node<T>::ndb_t::compute_node_depth(initialiser_list_);
+         }
+
+      private:
+
+         vector_init_iota_nconstconst_node(const vector_init_iota_nconstconst_node<T>&) exprtk_delete;
+         vector_init_iota_nconstconst_node<T>& operator=(const vector_init_iota_nconstconst_node<T>&) exprtk_delete;
+
+         mutable T* vector_base_;
+         const std::size_t size_;
+         std::vector<expression_ptr> initialiser_list_;
+      };
+
+      template <typename T>
+      class vector_init_iota_nconstnconst_node exprtk_final : public expression_node<T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+
+         vector_init_iota_nconstnconst_node(T* vector_base,
+                                            const std::size_t& size,
+                                            const std::vector<expression_ptr>& initialiser_list)
+         : vector_base_(vector_base)
+         , size_(size)
+         , initialiser_list_(initialiser_list)
+         {
+            assert(valid());
+         }
+
+         inline T value() const exprtk_override
+         {
+            T value = initialiser_list_[0]->value();
+            expression_node<T>& increment = *initialiser_list_[1];
+
+            for (std::size_t i = 0; i < size_; ++i, value += increment.value())
+            {
+               *(vector_base_ + i) = value;
+            }
+
+            return *(vector_base_);
+         }
+
+         inline typename expression_node<T>::node_type type() const exprtk_override
+         {
+            return expression_node<T>::e_vecinit;
+         }
+
+         inline bool valid() const exprtk_override
+         {
+            return vector_base_ &&
+                   (initialiser_list_.size() == 2) &&
+                   (!details::is_constant_node(initialiser_list_[0])) &&
+                   (!details::is_constant_node(initialiser_list_[1]));
+         }
+
+         void collect_nodes(typename expression_node<T>::noderef_list_t& node_delete_list) exprtk_override
+         {
+            expression_node<T>::ndb_t::collect(initialiser_list_, node_delete_list);
+         }
+
+         std::size_t node_depth() const exprtk_override
+         {
+            return expression_node<T>::ndb_t::compute_node_depth(initialiser_list_);
+         }
+
+      private:
+
+         vector_init_iota_nconstnconst_node(const vector_init_iota_nconstnconst_node<T>&) exprtk_delete;
+         vector_init_iota_nconstnconst_node<T>& operator=(const vector_init_iota_nconstnconst_node<T>&) exprtk_delete;
+
+         mutable T* vector_base_;
+         const std::size_t size_;
+         std::vector<expression_ptr> initialiser_list_;
+>>>>>>> Stashed changes
+      };
+
+      template <typename T>
+      class rebasevector_elem_node exprtk_final
+                                   : public expression_node<T>
+                                   , public ivariable      <T>
+      {
+      public:
+
+         typedef expression_node<T>*            expression_ptr;
+         typedef vector_holder<T>               vector_holder_t;
+         typedef vector_holder_t*               vector_holder_ptr;
+         typedef vec_data_store<T>              vds_t;
+         typedef std::pair<expression_ptr,bool> branch_t;
+
+         rebasevector_elem_node(expression_ptr vec_node,
+                                expression_ptr index,
+                                vector_holder_ptr vec_holder)
+         : vector_holder_(vec_holder)
+         {
+            construct_branch_pair(vector_node_, vec_node);
+            construct_branch_pair(index_      , index   );
+            assert(valid());
+         }
+
+         inline T value() const exprtk_override
+         {
+            return *access_vector();
+         }
+
+         inline T& ref() exprtk_override
+         {
+            return *access_vector();
+         }
+
+         inline const T& ref() const exprtk_override
+         {
+            return *access_vector();
+         }
+
+         inline typename expression_node<T>::node_type type() const exprtk_override
+         {
+            return expression_node<T>::e_rbvecelem;
+         }
+
+         inline bool valid() const exprtk_override
+         {
+            return
+               vector_holder_        &&
+               index_.first          &&
+               vector_node_.first    &&
+               index_.first->valid() &&
+               vector_node_.first->valid();
+         }
+
+         inline vector_holder_t& vec_holder()
+         {
+            return (*vector_holder_);
+         }
+
+         void collect_nodes(typename expression_node<T>::noderef_list_t& node_delete_list) exprtk_override
+         {
+            expression_node<T>::ndb_t::collect(vector_node_, node_delete_list);
+            expression_node<T>::ndb_t::collect(index_,       node_delete_list);
+         }
+
+         std::size_t node_depth() const exprtk_override
+         {
+            return expression_node<T>::ndb_t::compute_node_depth
+               (vector_node_, index_);
+         }
+
+      private:
+
+         inline T* access_vector() const
+         {
+            vector_node_.first->value();
+            return (vector_holder_->data() + details::numeric::to_uint64(index_.first->value()));
+         }
+
+         vector_holder_ptr vector_holder_;
+         branch_t          vector_node_;
+         branch_t          index_;
+      };
+
+      template <typename T>
+      class rebasevector_celem_node exprtk_final
+                                    : public expression_node<T>
+                                    , public ivariable      <T>
+      {
+      public:
+
+         typedef expression_node<T>* expression_ptr;
+         typedef vector_holder<T>    vector_holder_t;
+         typedef vector_holder_t*    vector_holder_ptr;
+         typedef std::pair<expression_ptr,bool> branch_t;
+
+<<<<<<< Updated upstream
+         rebasevector_celem_node(expression_ptr vec_node,
+                                 const std::size_t index,
+                                 vector_holder_ptr vec_holder)
+         : index_(index)
+         , vector_holder_(vec_holder)
+         {
+            construct_branch_pair(vector_node_, vec_node);
+=======
+         swap_vecvec_node(expression_ptr branch0,
+                          expression_ptr branch1)
+         : binary_node<T>(details::e_swap, branch0, branch1)
+         , vec0_node_ptr_(0)
+         , vec1_node_ptr_(0)
+         , initialised_  (false)
+         {
+            if (is_ivector_node(branch(0)))
+            {
+               vector_interface<T>* vi = reinterpret_cast<vector_interface<T>*>(0);
+
+               if (0 != (vi = dynamic_cast<vector_interface<T>*>(branch(0))))
+               {
+                  vec0_node_ptr_ = vi->vec();
+                  vds()          = vi->vds();
+               }
+            }
+
+            if (is_ivector_node(branch(1)))
+            {
+               vector_interface<T>* vi = reinterpret_cast<vector_interface<T>*>(0);
+
+               if (0 != (vi = dynamic_cast<vector_interface<T>*>(branch(1))))
+               {
+                  vec1_node_ptr_ = vi->vec();
+               }
+            }
+
+            if (vec0_node_ptr_ && vec1_node_ptr_)
+            {
+               initialised_ = size() <= base_size();
+            }
+
+>>>>>>> Stashed changes
+            assert(valid());
+         }
+
+         inline T value() const exprtk_override
+         {
+<<<<<<< Updated upstream
+            vector_node_.first->value();
+            return ref();;
+=======
+            binary_node<T>::branch(0)->value();
+            binary_node<T>::branch(1)->value();
+
+            T* vec0 = vec0_node_ptr_->vds().data();
+            T* vec1 = vec1_node_ptr_->vds().data();
+
+            assert(size() <= base_size());
+            const std::size_t n = size();
+
+            for (std::size_t i = 0; i < n; ++i)
+            {
+               std::swap(vec0[i],vec1[i]);
+            }
+
+            return vec1_node_ptr_->value();
+>>>>>>> Stashed changes
+         }
+
+         inline T& ref() exprtk_override
+         {
+            return *(vector_holder_->data() + index_);
+         }
+
+         inline const T& ref() const exprtk_override
+         {
+            return *(vector_holder_->data() + index_);
+         }
+
+         inline typename expression_node<T>::node_type type() const exprtk_override
+         {
+            return expression_node<T>::e_rbveccelem;
+         }
+
+         inline bool valid() const exprtk_override
+<<<<<<< Updated upstream
+         {
+            return
+               vector_holder_     &&
+               vector_node_.first &&
+               vector_node_.first->valid();
+=======
+         {
+            return initialised_ && binary_node<T>::valid();
+         }
+
+         std::size_t size() const exprtk_override
+         {
+            return std::min(
+               vec0_node_ptr_->vec_holder().size(),
+               vec1_node_ptr_->vec_holder().size());
+         }
+
+         std::size_t base_size() const exprtk_override
+         {
+            return std::min(
+               vec0_node_ptr_->vec_holder().base_size(),
+               vec1_node_ptr_->vec_holder().base_size());
+>>>>>>> Stashed changes
+         }
+
+         inline vector_holder_t& vec_holder()
+         {
+            return (*vector_holder_);
+         }
+
+         void collect_nodes(typename expression_node<T>::noderef_list_t& node_delete_list) exprtk_override
+         {
+            expression_node<T>::ndb_t::collect(vector_node_, node_delete_list);
+         }
+
+         std::size_t node_depth() const exprtk_override
+         {
+            return expression_node<T>::ndb_t::compute_node_depth(vector_node_);
+         }
+
+      private:
+
+<<<<<<< Updated upstream
+         const std::size_t index_;
+         vector_holder_ptr vector_holder_;
+         branch_t          vector_node_;
+=======
+         vector_node<T>* vec0_node_ptr_;
+         vector_node<T>* vec1_node_ptr_;
+         bool            initialised_;
+         vds_t           vds_;
+>>>>>>> Stashed changes
+      };
+
+      template <typename T>
+<<<<<<< Updated upstream
+      class rebasevector_elem_rtc_node exprtk_final
+                                       : public expression_node<T>
+                                       , public ivariable      <T>
+      {
+      public:
+
+         typedef expression_node<T>*            expression_ptr;
+         typedef vector_holder<T>               vector_holder_t;
+         typedef vector_holder_t*               vector_holder_ptr;
+         typedef std::pair<expression_ptr,bool> branch_t;
+=======
+      class stringvar_node exprtk_final
+                           : public expression_node <T>
+                           , public string_base_node<T>
+                           , public range_interface <T>
+      {
+      public:
+
+         typedef typename range_interface<T>::range_t range_t;
+
+         static std::string null_value;
+
+         explicit stringvar_node()
+         : value_(&null_value)
+         {}
+
+         explicit stringvar_node(std::string& v)
+         : value_(&v)
+         {
+            rp_.n0_c = std::make_pair<bool,std::size_t>(true,0);
+            rp_.n1_c = std::make_pair<bool,std::size_t>(true,v.size());
+            rp_.cache.first  = rp_.n0_c.second;
+            rp_.cache.second = rp_.n1_c.second;
+         }
+>>>>>>> Stashed changes
+
+         rebasevector_elem_rtc_node(expression_ptr vec_node,
+                                    expression_ptr index,
+                                    vector_holder_ptr vec_holder,
+                                    vector_access_runtime_check_ptr vec_rt_chk)
+         : vector_holder_(vec_holder)
+         , vec_rt_chk_(vec_rt_chk)
+         {
+            construct_branch_pair(vector_node_, vec_node);
+            construct_branch_pair(index_      , index   );
+            assert(valid());
+         }
+
+         inline T value() const exprtk_override
+         {
+<<<<<<< Updated upstream
+            return *access_vector();
+=======
+            rp_.n1_c.second  = (*value_).size();
+            rp_.cache.second = rp_.n1_c.second;
+
+            return std::numeric_limits<T>::quiet_NaN();
+>>>>>>> Stashed changes
+         }
+
+         inline T& ref() exprtk_override
+         {
+            return *access_vector();
+         }
+
+         inline const T& ref() const exprtk_override
+         {
+            return *access_vector();
+         }
+
+         inline typename expression_node<T>::node_type type() const exprtk_override
+         {
+            return expression_node<T>::e_rbvecelemrtc;
+         }
+
+         inline bool valid() const exprtk_override
+         {
+            return
+               vector_holder_        &&
+               index_.first          &&
+               vector_node_.first    &&
+               index_.first->valid() &&
+               vector_node_.first->valid();
+         }
+
+         inline vector_holder_t& vec_holder()
+         {
+            return (*vector_holder_);
+         }
+
+         void collect_nodes(typename expression_node<T>::noderef_list_t& node_delete_list) exprtk_override
+         {
+            expression_node<T>::ndb_t::collect(vector_node_, node_delete_list);
+            expression_node<T>::ndb_t::collect(index_      , node_delete_list);
+         }
+
+         std::size_t node_depth() const exprtk_override
+         {
+            return expression_node<T>::ndb_t::compute_node_depth
+               (vector_node_, index_);
+         }
+
+      private:
+
+         inline T* access_vector() const
+         {
+            vector_node_.first->value();
+            const _uint64_t index = details::numeric::to_uint64(index_.first->value());
+
+            if (index <= (vector_holder_->size() - 1))
+            {
+               return (vector_holder_->data() + index);
+            }
+
+            assert(vec_rt_chk_);
+
+            vector_access_runtime_check::violation_context context;
+            context.base_ptr   = reinterpret_cast<void*>(vector_holder_->data());
+            context.end_ptr    = reinterpret_cast<void*>(vector_holder_->data() + vector_holder_->size());
+            context.access_ptr = reinterpret_cast<void*>(vector_holder_->data() + index);
+            context.type_size  = sizeof(T);
+
+            return vec_rt_chk_->handle_runtime_violation(context) ?
+                   reinterpret_cast<T*>(context.access_ptr) :
+                   vector_holder_->data() ;
+         }
+
+         vector_holder_ptr vector_holder_;
+         branch_t          vector_node_;
+         branch_t          index_;
+         vector_access_runtime_check_ptr vec_rt_chk_;
+      };
+
+      template <typename T>
+<<<<<<< Updated upstream
+      class rebasevector_celem_rtc_node exprtk_final
+                                    : public expression_node<T>
+                                    , public ivariable      <T>
+=======
+      class string_range_node exprtk_final
+                              : public expression_node <T>
+                              , public string_base_node<T>
+                              , public range_interface <T>
+>>>>>>> Stashed changes
+      {
+      public:
+
+         typedef expression_node<T>*            expression_ptr;
+         typedef vector_holder<T>               vector_holder_t;
+         typedef vector_holder_t*               vector_holder_ptr;
+         typedef std::pair<expression_ptr,bool> branch_t;
+
+         rebasevector_celem_rtc_node(expression_ptr vec_node,
+                                     const std::size_t index,
+                                     vector_holder_ptr vec_holder,
+                                     vector_access_runtime_check_ptr vec_rt_chk)
+         : index_(index)
+         , vector_holder_(vec_holder)
+         , vector_base_((*vec_holder)[0])
+         , vec_rt_chk_(vec_rt_chk)
+         {
+            construct_branch_pair(vector_node_, vec_node);
+            assert(valid());
+         }
+
+         inline T value() const exprtk_override
+         {
+            return *access_vector();
+         }
+
+         inline T& ref() exprtk_override
+         {
+            return *access_vector();
+         }
+
+         inline const T& ref() const exprtk_override
+         {
+            return *access_vector();
+         }
+
+         inline typename expression_node<T>::node_type type() const exprtk_override
+         {
+            return expression_node<T>::e_rbveccelemrtc;
+         }
+
+         inline bool valid() const exprtk_override
+         {
+            return
+               vector_holder_     &&
+               vector_node_.first &&
+               vector_node_.first->valid();
+         }
+
+<<<<<<< Updated upstream
+         inline vector_holder_t& vec_holder()
+=======
+         inline std::string& ref()
+>>>>>>> Stashed changes
+         {
+            return (*vector_holder_);
+         }
+
+<<<<<<< Updated upstream
+         void collect_nodes(typename expression_node<T>::noderef_list_t& node_delete_list) exprtk_override
+=======
+         inline const std::string& ref() const
+>>>>>>> Stashed changes
          {
             expression_node<T>::ndb_t::collect(vector_node_, node_delete_list);
          }
@@ -10318,7 +11797,7 @@ namespace exprtk
          , rp_(rp)
          {}
 
-        ~const_string_range_node()
+        ~const_string_range_node() exprtk_override
          {
             rp_.free();
          }
@@ -10419,7 +11898,7 @@ namespace exprtk
             assert(valid());
          }
 
-        ~generic_string_range_node()
+        ~generic_string_range_node() exprtk_override
          {
             base_range_.free();
          }
@@ -10427,6 +11906,7 @@ namespace exprtk
          inline T value() const exprtk_override
          {
             branch_.first->value();
+<<<<<<< Updated upstream
 
             std::size_t str_r0 = 0;
             std::size_t str_r1 = 0;
@@ -10604,6 +12084,30 @@ namespace exprtk
 
                range_.n1_c.second  = value_.size();
                range_.cache.second = range_.n1_c.second;
+=======
+
+            std::size_t str_r0 = 0;
+            std::size_t str_r1 = 0;
+
+            std::size_t r0 = 0;
+            std::size_t r1 = 0;
+
+            const range_t& range = str_range_ptr_->range_ref();
+
+            const std::size_t base_str_size = str_base_ptr_->size();
+
+            if (
+                  range      (str_r0, str_r1, base_str_size         ) &&
+                  base_range_(r0    , r1    , base_str_size - str_r0)
+               )
+            {
+               const std::size_t size = r1 - r0;
+
+               range_.n1_c.second  = size;
+               range_.cache.second = range_.n1_c.second;
+
+               value_.assign(str_base_ptr_->base() + str_r0 + r0, size);
+>>>>>>> Stashed changes
             }
 
             return std::numeric_limits<T>::quiet_NaN();
@@ -10636,7 +12140,166 @@ namespace exprtk
 
          inline typename expression_node<T>::node_type type() const exprtk_override
          {
+<<<<<<< Updated upstream
             return expression_node<T>::e_strconcat;
+=======
+            return expression_node<T>::e_strgenrange;
+         }
+
+         inline bool valid() const exprtk_override
+         {
+            return initialised_ && branch_.first;
+         }
+
+         void collect_nodes(typename expression_node<T>::noderef_list_t& node_delete_list) exprtk_override
+         {
+            expression_node<T>::ndb_t::collect(branch_, node_delete_list);
+         }
+
+         std::size_t node_depth() const exprtk_override
+         {
+            return expression_node<T>::ndb_t::compute_node_depth(branch_);
+         }
+
+      private:
+
+         bool                initialised_;
+         branch_t            branch_;
+         str_base_ptr        str_base_ptr_;
+         irange_ptr          str_range_ptr_;
+         mutable range_t     base_range_;
+         mutable range_t     range_;
+         mutable std::string value_;
+      };
+
+      template <typename T>
+      class string_concat_node exprtk_final
+                               : public binary_node     <T>
+                               , public string_base_node<T>
+                               , public range_interface <T>
+      {
+      public:
+
+         typedef typename range_interface<T>::range_t range_t;
+         typedef range_interface<T>   irange_t;
+         typedef irange_t*            irange_ptr;
+         typedef range_t*             range_ptr;
+         typedef expression_node <T>* expression_ptr;
+         typedef string_base_node<T>* str_base_ptr;
+
+         using binary_node<T>::branch;
+
+         string_concat_node(const operator_type& opr,
+                            expression_ptr branch0,
+                            expression_ptr branch1)
+         : binary_node<T>(opr, branch0, branch1)
+         , initialised_(false)
+         , str0_base_ptr_ (0)
+         , str1_base_ptr_ (0)
+         , str0_range_ptr_(0)
+         , str1_range_ptr_(0)
+         {
+            range_.n0_c = std::make_pair<bool,std::size_t>(true,0);
+            range_.n1_c = std::make_pair<bool,std::size_t>(true,0);
+
+            range_.cache.first  = range_.n0_c.second;
+            range_.cache.second = range_.n1_c.second;
+
+            if (is_generally_string_node(branch(0)))
+            {
+               str0_base_ptr_ = dynamic_cast<str_base_ptr>(branch(0));
+
+               if (0 == str0_base_ptr_)
+                  return;
+
+               str0_range_ptr_ = dynamic_cast<irange_ptr>(branch(0));
+
+               if (0 == str0_range_ptr_)
+                  return;
+            }
+
+            if (is_generally_string_node(branch(1)))
+            {
+               str1_base_ptr_ = dynamic_cast<str_base_ptr>(branch(1));
+
+               if (0 == str1_base_ptr_)
+                  return;
+
+               str1_range_ptr_ = dynamic_cast<irange_ptr>(branch(1));
+
+               if (0 == str1_range_ptr_)
+                  return;
+            }
+
+            initialised_ = str0_base_ptr_  &&
+                           str1_base_ptr_  &&
+                           str0_range_ptr_ &&
+                           str1_range_ptr_ ;
+
+            assert(valid());
+         }
+
+         inline T value() const exprtk_override
+         {
+            branch(0)->value();
+            branch(1)->value();
+
+            std::size_t str0_r0 = 0;
+            std::size_t str0_r1 = 0;
+
+            std::size_t str1_r0 = 0;
+            std::size_t str1_r1 = 0;
+
+            const range_t& range0 = str0_range_ptr_->range_ref();
+            const range_t& range1 = str1_range_ptr_->range_ref();
+
+            if (
+                  range0(str0_r0, str0_r1, str0_base_ptr_->size()) &&
+                  range1(str1_r0, str1_r1, str1_base_ptr_->size())
+               )
+            {
+               const std::size_t size0 = (str0_r1 - str0_r0);
+               const std::size_t size1 = (str1_r1 - str1_r0);
+
+               value_.assign(str0_base_ptr_->base() + str0_r0, size0);
+               value_.append(str1_base_ptr_->base() + str1_r0, size1);
+
+               range_.n1_c.second  = value_.size();
+               range_.cache.second = range_.n1_c.second;
+            }
+
+            return std::numeric_limits<T>::quiet_NaN();
+         }
+
+         std::string str() const exprtk_override
+         {
+            return value_;
+         }
+
+         char_cptr base() const exprtk_override
+         {
+            return &value_[0];
+         }
+
+         std::size_t size() const exprtk_override
+         {
+            return value_.size();
+         }
+
+         range_t& range_ref() exprtk_override
+         {
+            return range_;
+         }
+
+         const range_t& range_ref() const exprtk_override
+         {
+            return range_;
+>>>>>>> Stashed changes
+         }
+
+         inline bool valid() const exprtk_override
+         {
+            return initialised_ && binary_node<T>::valid();
          }
 
          inline bool valid() const exprtk_override
@@ -11711,7 +13374,11 @@ namespace exprtk
          assert_node(expression_ptr   assert_condition_node,
                      expression_ptr   assert_message_node,
                      assert_check_ptr assert_check,
+<<<<<<< Updated upstream
                      assert_context_t context)
+=======
+                     const assert_context_t& context)
+>>>>>>> Stashed changes
          : assert_message_str_base_(0)
          , assert_check_(assert_check)
          , context_(context)
@@ -12411,10 +14078,17 @@ namespace exprtk
             {
                vec_node_ptr_ = static_cast<vector_elem_rtc_node<T>*>(branch(0));
             }
+<<<<<<< Updated upstream
 
             assert(valid());
          }
 
+=======
+
+            assert(valid());
+         }
+
+>>>>>>> Stashed changes
          inline T value() const exprtk_override
          {
             T& result = vec_node_ptr_->ref();
@@ -12577,6 +14251,7 @@ namespace exprtk
                vec_node_ptr_ = static_cast<vector_node<T>*>(branch(0));
                vds()         = vec_node_ptr_->vds();
             }
+<<<<<<< Updated upstream
 
             assert(valid());
          }
@@ -12630,6 +14305,61 @@ namespace exprtk
             #undef exprtk_loop
             #undef case_stmt
 
+=======
+
+            assert(valid());
+         }
+
+         inline T value() const exprtk_override
+         {
+            const T v = branch(1)->value();
+
+            T* vec = vds().data();
+
+            loop_unroll::details lud(size());
+            const T* upper_bound = vec + lud.upper_bound;
+
+            while (vec < upper_bound)
+            {
+               #define exprtk_loop(N) \
+               vec[N] = v;            \
+
+               exprtk_loop( 0) exprtk_loop( 1)
+               exprtk_loop( 2) exprtk_loop( 3)
+               #ifndef exprtk_disable_superscalar_unroll
+               exprtk_loop( 4) exprtk_loop( 5)
+               exprtk_loop( 6) exprtk_loop( 7)
+               exprtk_loop( 8) exprtk_loop( 9)
+               exprtk_loop(10) exprtk_loop(11)
+               exprtk_loop(12) exprtk_loop(13)
+               exprtk_loop(14) exprtk_loop(15)
+               #endif
+
+               vec += lud.batch_size;
+            }
+
+            switch (lud.remainder)
+            {
+               #define case_stmt(N) \
+               case N : *vec++ = v; \
+               exprtk_fallthrough   \
+
+               #ifndef exprtk_disable_superscalar_unroll
+               case_stmt(15) case_stmt(14)
+               case_stmt(13) case_stmt(12)
+               case_stmt(11) case_stmt(10)
+               case_stmt( 9) case_stmt( 8)
+               case_stmt( 7) case_stmt( 6)
+               case_stmt( 5) case_stmt( 4)
+               #endif
+               case_stmt( 3) case_stmt( 2)
+               case 1 : *vec++ = v;
+            }
+
+            #undef exprtk_loop
+            #undef case_stmt
+
+>>>>>>> Stashed changes
             return vec_node_ptr_->value();
          }
 
@@ -13502,10 +15232,20 @@ namespace exprtk
                                                      vec_data_store<T>& vds)
       {
          memory_context_t<T> result_ctxt;
+<<<<<<< Updated upstream
          result_ctxt.temp_  = (vec_holder.rebaseable()) ?
                               new vector_holder<T>(vec_holder,vds) :
                               new vector_holder<T>(vds) ;
          result_ctxt.temp_vec_node_ = new vector_node  <T>(vds,result_ctxt.temp_);
+=======
+
+         result_ctxt.temp_  = (vec_holder.rebaseable()) ?
+                              new vector_holder<T>(vec_holder,vds) :
+                              new vector_holder<T>(vds) ;
+
+         result_ctxt.temp_vec_node_ = new vector_node<T>(vds,result_ctxt.temp_);
+
+>>>>>>> Stashed changes
          return result_ctxt;
       }
 
@@ -13529,7 +15269,12 @@ namespace exprtk
                                 new vector_holder<T>(vec_holder1, vds) ;
          }
 
+<<<<<<< Updated upstream
          result_ctxt.temp_vec_node_ = new vector_node <T>(vds,result_ctxt.temp_);
+=======
+         result_ctxt.temp_vec_node_ = new vector_node<T>(vds,result_ctxt.temp_);
+
+>>>>>>> Stashed changes
          return result_ctxt;
       }
 
@@ -14237,7 +15982,11 @@ namespace exprtk
          typedef vector_holder   <T>  vector_holder_t;
          typedef vector_holder_t*     vector_holder_ptr;
          typedef vec_data_store  <T>  vds_t;
+<<<<<<< Updated upstream
          typedef memory_context_t<T> memory_context;
+=======
+         typedef memory_context_t<T>  memory_context;
+>>>>>>> Stashed changes
          typedef std::pair<expression_ptr,bool> branch_t;
 
          conditional_vector_node(expression_ptr condition,
@@ -14915,9 +16664,20 @@ namespace exprtk
             for (std::size_t i = 0; i < vv_list_.size(); ++i)
             {
                vecview_t& vv = vv_list_[i];
+<<<<<<< Updated upstream
                if (vv && typestore_list_[i].vec_data)
                {
                   vv->remove_ref(&typestore_list_[i].vec_data);
+=======
+               if (vv)
+               {
+                  if (typestore_list_[i].vec_data)
+                  {
+                     vv->remove_ref(&typestore_list_[i].vec_data);
+                  }
+
+                  vv->remove_size_ref(&typestore_list_[i].size);
+>>>>>>> Stashed changes
                   typestore_list_[i].vec_data = 0;
                }
             }
@@ -14957,6 +16717,10 @@ namespace exprtk
                   ts.size = vi->size();
                   ts.data = vi->vds().data();
                   ts.type = type_store_t::e_vector;
+<<<<<<< Updated upstream
+=======
+                  ts.ivec = vi;
+>>>>>>> Stashed changes
 
                   if (
                        vi->vec()->vec_holder().rebaseable() &&
@@ -14964,7 +16728,16 @@ namespace exprtk
                      )
                   {
                      vv_list_[i] = vi->vec()->vec_holder().rebaseable_instance();
+<<<<<<< Updated upstream
                      vv_list_[i]->set_ref(&ts.vec_data);
+=======
+                     vv_list_[i]->set_size_ref(&ts.size);
+
+                     if (!amalgamated_vecop(arg_list_[i]))
+                     {
+                        vv_list_[i]->set_ref(&ts.vec_data);
+                     }
+>>>>>>> Stashed changes
                   }
                }
                #ifndef exprtk_disable_string_capabilities
@@ -15062,6 +16835,8 @@ namespace exprtk
 
          inline virtual bool populate_value_list() const
          {
+            assert(branch_.size() == typestore_list_.size());
+
             for (std::size_t i = 0; i < branch_.size(); ++i)
             {
                expr_as_vec1_store_[i] = branch_[i].first->value();
@@ -15347,6 +17122,8 @@ namespace exprtk
          {
             if (gen_function_t::populate_value_list())
             {
+               prepare_typestore_list();
+
                typedef typename type_store<T>::parameter_list parameter_list_t;
 
                results_context_->
@@ -15369,6 +17146,19 @@ namespace exprtk
          }
 
       private:
+
+         void prepare_typestore_list() const
+         {
+            for (std::size_t i = 0; i < gen_function_t::typestore_list_.size(); ++i)
+            {
+               typename gen_function_t::type_store_t& ts = gen_function_t::typestore_list_[i];
+
+               if (ts.ivec)
+               {
+                  ts.size = ts.ivec->size();
+               }
+            }
+         }
 
          results_context_t* results_context_;
       };
@@ -18373,7 +20163,7 @@ namespace exprtk
          , rp0_(rp0)
          {}
 
-        ~str_xrox_node()
+        ~str_xrox_node() exprtk_override
          {
             rp0_.free();
          }
@@ -18508,7 +20298,7 @@ namespace exprtk
          , rp1_(rp1)
          {}
 
-        ~str_xroxr_node()
+        ~str_xroxr_node() exprtk_override
          {
             rp0_.free();
             rp1_.free();
@@ -19769,6 +21559,32 @@ namespace exprtk
 
       std::string parameter_sequence;
       return_type rtrn_type;
+
+      static inline std::string generate_prefix_args(const std::string& prefix_args, std::size_t start = 0, std::size_t end = 10)
+      {
+         std::string result;
+
+         for (std::size_t i = start; i <= end; ++i)
+         {
+            result += prefix_args + std::string(i,'?');
+            result += (i != end) ? "|" : "";
+         }
+
+         return result;
+      }
+
+      static inline std::string generate_suffix_args(const std::string& suffix_args, std::size_t start = 0, std::size_t end = 10)
+      {
+         std::string result;
+
+         for (std::size_t i = start; i <= end; ++i)
+         {
+            result += std::string(i,'?') + suffix_args;
+            result += (i != end) ? "|" : "";
+         }
+
+         return result;
+      }
    };
 
    #ifndef exprtk_disable_string_capabilities
@@ -20318,10 +22134,10 @@ namespace exprtk
          {
             struct init_type
             {
-               static inline double set(double)           { return (0.0);           }
-               static inline double set(long double)      { return (0.0);           }
-               static inline float  set(float)            { return (0.0f);          }
-               static inline std::string set(std::string) { return std::string(""); }
+               static inline double set(double)            { return (0.0);           }
+               static inline double set(long double)       { return (0.0);           }
+               static inline float  set(float)             { return (0.0f);          }
+               static inline std::string set(std::string&) { return std::string(""); }
             };
 
             static RawType null_type = init_type::set(RawType());
@@ -21576,7 +23392,11 @@ namespace exprtk
 
          static std::string to_str(data_type dt)
          {
+<<<<<<< Updated upstream
             switch(dt)
+=======
+            switch (dt)
+>>>>>>> Stashed changes
             {
                case e_unknown   : return "e_unknown  ";
                case e_expr      : return "e_expr"     ;
@@ -21962,6 +23782,7 @@ namespace exprtk
    public:
 
       enum node_types
+<<<<<<< Updated upstream
       {
          e_literal,
          e_variable,
@@ -21978,6 +23799,24 @@ namespace exprtk
 
       static inline bool is_literal(const expression<T>& expr)
       {
+=======
+      {
+         e_literal,
+         e_variable,
+         e_string,
+         e_unary,
+         e_binary,
+         e_function,
+         e_vararg,
+         e_null,
+         e_assert,
+         e_sf3ext,
+         e_sf4ext
+      };
+
+      static inline bool is_literal(const expression<T>& expr)
+      {
+>>>>>>> Stashed changes
          return expr.control_block_ && details::is_literal_node(expr.control_block_->expr);
       }
 
@@ -22079,7 +23918,11 @@ namespace exprtk
          {
             assert((*vnode)[i]);
 
+<<<<<<< Updated upstream
             switch(type_seq[i])
+=======
+            switch (type_seq[i])
+>>>>>>> Stashed changes
             {
                case e_literal  : { if (details::is_literal_node         ((*vnode)[i])) continue; } break;
                case e_variable : { if (details::is_variable_node        ((*vnode)[i])) continue; } break;
@@ -22475,6 +24318,7 @@ namespace exprtk
          explicit scope_element_manager(parser<T>& p)
          : parser_(p)
          , input_param_cnt_(0)
+         , total_local_symb_size_bytes_(0)
          {}
 
          inline std::size_t size() const
@@ -22555,6 +24399,20 @@ namespace exprtk
                   return false;
             }
 
+            switch (se.type)
+            {
+               case scope_element::e_variable : total_local_symb_size_bytes_ += sizeof(T);
+                                                break;
+
+               case scope_element::e_literal  : total_local_symb_size_bytes_ += sizeof(T);
+                                                break;
+
+               case scope_element::e_vector   : total_local_symb_size_bytes_ += sizeof(T) * se.size;
+                                                break;
+
+               default                        : break;
+            }
+
             element_.push_back(se);
             std::sort(element_.begin(),element_.end());
 
@@ -22623,7 +24481,13 @@ namespace exprtk
 
             element_.clear();
 
-            input_param_cnt_ = 0;
+            input_param_cnt_             = 0;
+            total_local_symb_size_bytes_ = 0;
+         }
+
+         inline std::size_t total_local_symb_size_bytes() const
+         {
+            return total_local_symb_size_bytes_;
          }
 
          inline std::size_t next_ip_index()
@@ -22683,6 +24547,7 @@ namespace exprtk
          std::vector<scope_element> element_;
          scope_element null_element_;
          std::size_t input_param_cnt_;
+         std::size_t total_local_symb_size_bytes_;
       };
 
       class scope_handler
@@ -23512,7 +25377,7 @@ namespace exprtk
 
          usr_mode mode;
 
-         unknown_symbol_resolver(const usr_mode m = e_usrmode_default)
+         explicit unknown_symbol_resolver(const usr_mode m = e_usrmode_default)
          : mode(m)
          {}
 
@@ -23570,7 +25435,7 @@ namespace exprtk
          typedef std::pair<std::string,symbol_type> symbol_t;
          typedef std::vector<symbol_t> symbol_list_t;
 
-         dependent_entity_collector(const std::size_t options = e_ct_none)
+         explicit dependent_entity_collector(const std::size_t options = e_ct_none)
          : options_(options)
          , collect_variables_  ((options_ & e_ct_variables  ) == e_ct_variables  )
          , collect_functions_  ((options_ & e_ct_functions  ) == e_ct_functions  )
@@ -23825,9 +25690,14 @@ namespace exprtk
          settings_store(const std::size_t compile_options = default_compile_all_opts)
          : max_stack_depth_(400)
          , max_node_depth_(10000)
+<<<<<<< Updated upstream
          , max_local_vector_size_(2000000000)
+=======
+         , max_total_local_symbol_size_bytes_(2000000000)
+         , max_local_vector_size_(max_total_local_symbol_size_bytes_ / sizeof(T))
+>>>>>>> Stashed changes
          {
-           load_compile_options(compile_options);
+            load_compile_options(compile_options);
          }
 
          settings_store& enable_all_base_functions()
@@ -24282,6 +26152,14 @@ namespace exprtk
             max_local_vector_size_ = max_local_vector_size;
          }
 
+<<<<<<< Updated upstream
+=======
+         void set_max_total_local_symbol_size_bytes(const std::size_t max_total_lcl_symb_size)
+         {
+            max_total_local_symbol_size_bytes_ = max_total_lcl_symb_size;
+         }
+
+>>>>>>> Stashed changes
          std::size_t max_stack_depth() const
          {
             return max_stack_depth_;
@@ -24297,6 +26175,14 @@ namespace exprtk
             return max_local_vector_size_;
          }
 
+<<<<<<< Updated upstream
+=======
+         std::size_t max_total_local_symbol_size_bytes() const
+         {
+            return max_total_local_symbol_size_bytes_;
+         }
+
+>>>>>>> Stashed changes
       private:
 
          void load_compile_options(const std::size_t compile_options)
@@ -24398,6 +26284,10 @@ namespace exprtk
 
          std::size_t max_stack_depth_;
          std::size_t max_node_depth_;
+<<<<<<< Updated upstream
+=======
+         std::size_t max_total_local_symbol_size_bytes_;
+>>>>>>> Stashed changes
          std::size_t max_local_vector_size_;
 
          friend class parser<T>;
@@ -24525,6 +26415,11 @@ namespace exprtk
 
          return_cleanup();
 
+         if (!valid_settings())
+         {
+            return false;
+         }
+
          expression_generator_.set_allocator(node_allocator_);
 
          if (expression_string.empty())
@@ -24556,11 +26451,23 @@ namespace exprtk
          if (halt_compilation_check())
          {
             exprtk_debug(("halt_compilation_check() - compile checkpoint 0\n"));
+<<<<<<< Updated upstream
+=======
+            sem_.cleanup();
+>>>>>>> Stashed changes
             return false;
          }
 
          if (!run_assemblies())
          {
+            sem_.cleanup();
+            return false;
+         }
+
+         if (halt_compilation_check())
+         {
+            exprtk_debug(("halt_compilation_check() - compile checkpoint 1\n"));
+            sem_.cleanup();
             return false;
          }
 
@@ -24810,6 +26717,11 @@ namespace exprtk
          return dec_;
       }
 
+      inline std::size_t total_local_symbol_size_bytes() const
+      {
+         return sem_.total_local_symb_size_bytes();
+      }
+
       inline bool replace_symbol(const std::string& old_symbol, const std::string& new_symbol)
       {
          if (!settings_.replacer_enabled())
@@ -24977,7 +26889,7 @@ namespace exprtk
          std::vector<expression_node_ptr> arg_list;
          std::vector<bool> side_effect_list;
 
-         scoped_vec_delete<expression_node_t> sdd((*this),arg_list);
+         scoped_vec_delete<expression_node_t> svd((*this), arg_list);
 
          lexer::token begin_token;
          lexer::token end_token;
@@ -25061,7 +26973,7 @@ namespace exprtk
 
          const expression_node_ptr result = simplify(arg_list,side_effect_list);
 
-         sdd.delete_ptr = (0 == result);
+         svd.delete_ptr = (0 == result);
 
          return result;
       }
@@ -25089,7 +27001,11 @@ namespace exprtk
          inline void set(const precedence_level& l,
                          const precedence_level& r,
                          const details::operator_type& o,
+<<<<<<< Updated upstream
                          const token_t tkn = token_t())
+=======
+                         const token_t& tkn = token_t())
+>>>>>>> Stashed changes
          {
             left      = l;
             right     = r;
@@ -25432,6 +27348,7 @@ namespace exprtk
                "ERR018 - Expression depth of " + details::to_str(static_cast<int>(expression->node_depth())) +
                " exceeds maximum allowed expression depth of " + details::to_str(static_cast<int>(settings_.max_node_depth_)),
                exprtk_error_location));
+<<<<<<< Updated upstream
 
             free_node(node_allocator_, expression);
 
@@ -25455,6 +27372,31 @@ namespace exprtk
                exprtk_error_location));
 
             free_node(node_allocator_, expression);
+=======
+
+            free_node(node_allocator_, expression);
+
+            return error_node();
+         }
+         else if (
+                   !settings_.commutative_check_enabled()          &&
+                   !details::is_logic_opr(current_token().value)   &&
+                   (current_state.operation == details::e_default) &&
+                   (
+                     current_token().type == token_t::e_symbol ||
+                     current_token().type == token_t::e_number ||
+                     current_token().type == token_t::e_string
+                   )
+                 )
+         {
+            set_error(make_error(
+               parser_error::e_syntax,
+               current_token(),
+               "ERR019 - Invalid syntax '" + current_token().value  + "' possible missing operator or context",
+               exprtk_error_location));
+
+            free_node(node_allocator_, expression);
+>>>>>>> Stashed changes
 
             return error_node();
          }
@@ -26665,7 +28607,7 @@ namespace exprtk
          std::vector<expression_node_ptr> arg_list;
          std::vector<bool> side_effect_list;
 
-         scoped_vec_delete<expression_node_t> sdd((*this),arg_list);
+         scoped_vec_delete<expression_node_t> svd((*this), arg_list);
 
          brkcnt_list_.push_front(false);
 
@@ -26727,9 +28669,9 @@ namespace exprtk
 
             branch = simplify(arg_list,side_effect_list);
 
-            sdd.delete_ptr = (0 == branch);
+            svd.delete_ptr = (0 == branch);
 
-            if (sdd.delete_ptr)
+            if (svd.delete_ptr)
             {
                set_error(make_error(
                   parser_error::e_syntax,
@@ -27057,7 +28999,6 @@ namespace exprtk
       inline expression_node_ptr parse_switch_statement()
       {
          std::vector<expression_node_ptr> arg_list;
-         expression_node_ptr result = error_node();
 
          if (!details::imatch(current_token().value,"switch"))
          {
@@ -27070,7 +29011,7 @@ namespace exprtk
             return error_node();
          }
 
-         scoped_vec_delete<expression_node_t> svd((*this),arg_list);
+         scoped_vec_delete<expression_node_t> svd((*this), arg_list);
 
          next_token();
 
@@ -27219,7 +29160,7 @@ namespace exprtk
             arg_list.push_back(node_allocator_.allocate_c<literal_node_t>(std::numeric_limits<T>::quiet_NaN()));
          }
 
-         result = expression_generator_.switch_statement(arg_list, (0 != default_statement));
+         expression_node_ptr result = expression_generator_.switch_statement(arg_list, (0 != default_statement));
 
          svd.delete_ptr = (0 == result);
          defstmt_delete.delete_ptr = (0 == result);
@@ -27242,7 +29183,7 @@ namespace exprtk
             return error_node();
          }
 
-         scoped_vec_delete<expression_node_t> svd((*this),arg_list);
+         scoped_vec_delete<expression_node_t> svd((*this), arg_list);
 
          next_token();
 
@@ -27377,7 +29318,7 @@ namespace exprtk
             return error_node();
          }
 
-         scoped_vec_delete<expression_node_t> sdd((*this),arg_list);
+         scoped_vec_delete<expression_node_t> svd((*this), arg_list);
 
          lodge_symbol(symbol, e_st_function);
 
@@ -27431,7 +29372,7 @@ namespace exprtk
 
          const expression_node_ptr result = expression_generator_.vararg_function(opt_type,arg_list);
 
-         sdd.delete_ptr = (0 == result);
+         svd.delete_ptr = (0 == result);
          return result;
       }
 
@@ -27698,9 +29639,7 @@ namespace exprtk
          std::vector<expression_node_ptr> arg_list;
          std::vector<bool> side_effect_list;
 
-         expression_node_ptr result = error_node();
-
-         scoped_vec_delete<expression_node_t> sdd((*this),arg_list);
+         scoped_vec_delete<expression_node_t> svd((*this), arg_list);
 
          scope_handler sh(*this);
 
@@ -27740,9 +29679,9 @@ namespace exprtk
                break;
          }
 
-         result = simplify(arg_list, side_effect_list, source.empty());
+         expression_node_ptr result = simplify(arg_list, side_effect_list, source.empty());
 
-         sdd.delete_ptr = (0 == result);
+         svd.delete_ptr = (0 == result);
          return result;
       }
 
@@ -28217,8 +30156,13 @@ namespace exprtk
          return error_node();
       }
 
+<<<<<<< Updated upstream
       inline expression_node_ptr synthesize_vector_element(const std::string& vector_name,
                                                            vector_holder_ptr vec,
+=======
+      inline expression_node_ptr synthesize_vector_element(const std::string&  vector_name,
+                                                           vector_holder_ptr   vec,
+>>>>>>> Stashed changes
                                                            expression_node_ptr vec_node,
                                                            expression_node_ptr index_expr)
       {
@@ -28251,9 +30195,7 @@ namespace exprtk
       {
          std::vector<expression_node_ptr> arg_list;
 
-         expression_node_ptr result = error_node();
-
-         scoped_vec_delete<expression_node_t> sdd((*this),arg_list);
+         scoped_vec_delete<expression_node_t> svd((*this), arg_list);
 
          next_token();
 
@@ -28337,9 +30279,9 @@ namespace exprtk
             return error_node();
          }
 
-         result = expression_generator_.vararg_function_call(vararg_function,arg_list);
+         expression_node_ptr result = expression_generator_.vararg_function_call(vararg_function,arg_list);
 
-         sdd.delete_ptr = (0 == result);
+         svd.delete_ptr = (0 == result);
 
          return result;
       }
@@ -28609,7 +30551,7 @@ namespace exprtk
       {
          std::vector<expression_node_ptr> arg_list;
 
-         scoped_vec_delete<expression_node_t> sdd((*this),arg_list);
+         scoped_vec_delete<expression_node_t> svd((*this), arg_list);
 
          next_token();
 
@@ -28716,6 +30658,7 @@ namespace exprtk
             return error_node();
          }
 
+<<<<<<< Updated upstream
          expression_node_ptr result = error_node();
 
          result = (tc.paramseq_count() <= 1) ?
@@ -28723,8 +30666,16 @@ namespace exprtk
                        .generic_function_call(function, arg_list) :
                   expression_generator_
                        .generic_function_call(function, arg_list, param_seq_index);
+=======
+         expression_node_ptr result =
+            (tc.paramseq_count() <= 1) ?
+               expression_generator_
+                  .generic_function_call(function, arg_list) :
+               expression_generator_
+                  .generic_function_call(function, arg_list, param_seq_index);
+>>>>>>> Stashed changes
 
-         sdd.delete_ptr = (0 == result);
+         svd.delete_ptr = (0 == result);
 
          return result;
       }
@@ -28812,7 +30763,7 @@ namespace exprtk
          }
 
          std::vector<expression_node_ptr> arg_list;
-         scoped_vec_delete<expression_node_t> sdd((*this),arg_list);
+         scoped_vec_delete<expression_node_t> svd((*this), arg_list);
 
          if (!parse_igeneric_function_params(param_type_list, arg_list, function_name, function, tc))
          {
@@ -28832,6 +30783,7 @@ namespace exprtk
             return error_node();
          }
 
+<<<<<<< Updated upstream
          expression_node_ptr result = error_node();
 
          result = (tc.paramseq_count() <= 1) ?
@@ -28839,8 +30791,16 @@ namespace exprtk
                        .string_function_call(function, arg_list) :
                   expression_generator_
                        .string_function_call(function, arg_list, param_seq_index);
+=======
+         expression_node_ptr result =
+            (tc.paramseq_count() <= 1) ?
+               expression_generator_
+                  .string_function_call(function, arg_list) :
+               expression_generator_
+                  .string_function_call(function, arg_list, param_seq_index);
+>>>>>>> Stashed changes
 
-         sdd.delete_ptr = (0 == result);
+         svd.delete_ptr = (0 == result);
 
          return result;
       }
@@ -28863,7 +30823,7 @@ namespace exprtk
          }
 
          std::vector<expression_node_ptr> arg_list;
-         scoped_vec_delete<expression_node_t> sdd((*this),arg_list);
+         scoped_vec_delete<expression_node_t> svd((*this), arg_list);
 
          if (!parse_igeneric_function_params(param_type_list, arg_list, function_name, function, tc))
          {
@@ -28912,7 +30872,7 @@ namespace exprtk
                exprtk_error_location));
          }
 
-         sdd.delete_ptr = (0 == result);
+         svd.delete_ptr = (0 == result);
          return result;
       }
       #endif
@@ -29206,6 +31166,23 @@ namespace exprtk
          typename symbol_table_t::vector_holder_ptr vec_holder = typename symbol_table_t::vector_holder_ptr(0);
 
          const std::size_t vec_size = static_cast<std::size_t>(details::numeric::to_int32(vector_size));
+<<<<<<< Updated upstream
+=======
+         const std::size_t predicted_total_lclsymb_size = sizeof(T) * vec_size + sem_.total_local_symb_size_bytes();
+
+         if (predicted_total_lclsymb_size > settings().max_total_local_symbol_size_bytes())
+         {
+            set_error(make_error(
+               parser_error::e_syntax,
+               current_token(),
+               "ERR161 - Adding vector '" + vec_name + "' of size " + details::to_str(vec_size) + " bytes "
+               "will exceed max total local symbol size of: " + details::to_str(settings().max_total_local_symbol_size_bytes())  + " bytes, "
+               "current total size: " + details::to_str(sem_.total_local_symb_size_bytes()) + " bytes",
+               exprtk_error_location));
+
+            return error_node();
+         }
+>>>>>>> Stashed changes
 
          scope_element& se = sem_.get_element(vec_name);
 
@@ -29216,7 +31193,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR161 - Illegal redefinition of local vector: '" + vec_name + "'",
+=======
+                  "ERR162 - Illegal redefinition of local vector: '" + vec_name + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -29252,7 +31233,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR162 - Failed to add new local vector '" + vec_name + "' to SEM",
+=======
+                  "ERR163 - Failed to add new local vector '" + vec_name + "' to SEM",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                sem_.free_element(nse);
@@ -29260,6 +31245,11 @@ namespace exprtk
                return error_node();
             }
 
+<<<<<<< Updated upstream
+=======
+            assert(sem_.total_local_symb_size_bytes() <= settings().max_total_local_symbol_size_bytes());
+
+>>>>>>> Stashed changes
             vec_holder = nse.vec_node;
 
             exprtk_debug(("parse_define_vector_statement() - INFO - Added new local vector: %s[%d]\n",
@@ -29273,7 +31263,7 @@ namespace exprtk
 
          std::vector<expression_node_ptr> vec_initilizer_list;
 
-         scoped_vec_delete<expression_node_t> svd((*this),vec_initilizer_list);
+         scoped_vec_delete<expression_node_t> svd((*this), vec_initilizer_list);
 
          bool single_value_initialiser = false;
          bool range_value_initialiser  = false;
@@ -29285,7 +31275,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR163 - Expected ']' as part of vector size definition",
+=======
+               "ERR164 - Expected ']' as part of vector size definition",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -29297,7 +31291,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR164 - Expected ':=' as part of vector definition",
+=======
+                  "ERR165 - Expected ':=' as part of vector definition",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -29311,7 +31309,11 @@ namespace exprtk
                   set_error(make_error(
                      parser_error::e_syntax,
                      current_token(),
+<<<<<<< Updated upstream
                      "ERR165 - Failed to parse first component of vector initialiser for vector: " + vec_name,
+=======
+                     "ERR166 - Failed to parse first component of vector initialiser for vector: " + vec_name,
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   return error_node();
@@ -29328,7 +31330,11 @@ namespace exprtk
                      set_error(make_error(
                         parser_error::e_syntax,
                         current_token(),
+<<<<<<< Updated upstream
                         "ERR166 - Failed to parse second component of vector initialiser for vector: " + vec_name,
+=======
+                        "ERR167 - Failed to parse second component of vector initialiser for vector: " + vec_name,
+>>>>>>> Stashed changes
                         exprtk_error_location));
 
                      return error_node();
@@ -29342,7 +31348,11 @@ namespace exprtk
                   set_error(make_error(
                      parser_error::e_syntax,
                      current_token(),
+<<<<<<< Updated upstream
                      "ERR167 - Expected ']' to close single value vector initialiser",
+=======
+                     "ERR168 - Expected ']' to close single value vector initialiser",
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   return error_node();
@@ -29393,7 +31403,11 @@ namespace exprtk
                      set_error(make_error(
                         parser_error::e_syntax,
                         current_token(),
+<<<<<<< Updated upstream
                         "ERR168 - Expected '{' as part of vector initialiser list",
+=======
+                        "ERR169 - Expected '{' as part of vector initialiser list",
+>>>>>>> Stashed changes
                         exprtk_error_location));
 
                      return error_node();
@@ -29413,7 +31427,11 @@ namespace exprtk
                      set_error(make_error(
                         parser_error::e_syntax,
                         current_token(),
+<<<<<<< Updated upstream
                         "ERR169 - Expected '{' as part of vector initialiser list",
+=======
+                        "ERR170 - Expected '{' as part of vector initialiser list",
+>>>>>>> Stashed changes
                         exprtk_error_location));
 
                      return error_node();
@@ -29431,7 +31449,11 @@ namespace exprtk
                      set_error(make_error(
                         parser_error::e_syntax,
                         current_token(),
+<<<<<<< Updated upstream
                         "ERR170 - Expected ',' between vector initialisers",
+=======
+                        "ERR171 - Expected ',' between vector initialisers",
+>>>>>>> Stashed changes
                         exprtk_error_location));
 
                      return error_node();
@@ -29453,7 +31475,11 @@ namespace exprtk
                   set_error(make_error(
                      parser_error::e_syntax,
                      current_token(),
+<<<<<<< Updated upstream
                      "ERR171 - Expected ';' at end of vector definition",
+=======
+                     "ERR172 - Expected ';' at end of vector definition",
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   return error_node();
@@ -29469,7 +31495,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR172 - Initialiser list larger than the number of elements in the vector: '" + vec_name + "'",
+=======
+                  "ERR173 - Initialiser list larger than the number of elements in the vector: '" + vec_name + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -29592,7 +31622,11 @@ namespace exprtk
          set_error(make_error(
             parser_error::e_synthesis,
             current_token(),
+<<<<<<< Updated upstream
             "ERR173 - Failed to generate initialisation node for vector: " + vec_name,
+=======
+            "ERR174 - Failed to generate initialisation node for vector: " + vec_name,
+>>>>>>> Stashed changes
             exprtk_error_location));
 
          return error_node();
@@ -29612,7 +31646,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR174 - Illegal redefinition of local variable: '" + str_name + "'",
+=======
+                  "ERR175 - Illegal redefinition of local variable: '" + str_name + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                free_node(node_allocator_, initialisation_expression);
@@ -29644,7 +31682,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR175 - Failed to add new local string variable '" + str_name + "' to SEM",
+=======
+                  "ERR176 - Failed to add new local string variable '" + str_name + "' to SEM",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                free_node(node_allocator_, initialisation_expression);
@@ -29653,6 +31695,8 @@ namespace exprtk
 
                return error_node();
             }
+
+            assert(sem_.total_local_symb_size_bytes() <= settings().max_total_local_symbol_size_bytes());
 
             str_node = nse.str_node;
 
@@ -29690,7 +31734,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR176 - Illegal variable definition",
+=======
+               "ERR177 - Illegal variable definition",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -29711,7 +31759,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR177 - Expected a symbol for variable definition",
+=======
+               "ERR178 - Expected a symbol for variable definition",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -29721,7 +31773,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR178 - Illegal redefinition of reserved keyword: '" + var_name + "'",
+=======
+               "ERR179 - Illegal redefinition of reserved keyword: '" + var_name + "'",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -29731,7 +31787,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR179 - Illegal redefinition of variable '" + var_name + "'",
+=======
+               "ERR180 - Illegal redefinition of variable '" + var_name + "'",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -29741,7 +31801,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR180 - Illegal redefinition of local variable: '" + var_name + "'",
+=======
+               "ERR181 - Illegal redefinition of local variable: '" + var_name + "'",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -29761,7 +31825,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR181 - Failed to parse initialisation expression for variable '" + var_name + "'",
+=======
+                  "ERR182 - Failed to parse initialisation expression for variable '" + var_name + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -29779,7 +31847,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR182 - Expected ';' after variable '" + var_name + "' definition",
+=======
+                  "ERR183 - Expected ';' after variable '" + var_name + "' definition",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                free_node(node_allocator_, initialisation_expression);
@@ -29807,7 +31879,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR183 - Illegal redefinition of local variable: '" + var_name + "'",
+=======
+                  "ERR184 - Illegal redefinition of local variable: '" + var_name + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                free_node(node_allocator_, initialisation_expression);
@@ -29825,6 +31901,23 @@ namespace exprtk
 
          if (0 == var_node)
          {
+            const std::size_t predicted_total_lclsymb_size = sizeof(T) + sem_.total_local_symb_size_bytes();
+
+            if (predicted_total_lclsymb_size > settings().max_total_local_symbol_size_bytes())
+            {
+               set_error(make_error(
+                  parser_error::e_syntax,
+                  current_token(),
+                  "ERR185 - Adding variable '" + var_name + "' "
+                  "will exceed max total local symbol size of: " + details::to_str(settings().max_total_local_symbol_size_bytes()) + " bytes, "
+                  "current total size: " + details::to_str(sem_.total_local_symb_size_bytes()) + " bytes",
+                  exprtk_error_location));
+
+               free_node(node_allocator_, initialisation_expression);
+
+               return error_node();
+            }
+
             scope_element nse;
             nse.name      = var_name;
             nse.active    = true;
@@ -29839,7 +31932,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR184 - Failed to add new local variable '" + var_name + "' to SEM",
+=======
+                  "ERR186 - Failed to add new local variable '" + var_name + "' to SEM",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                free_node(node_allocator_, initialisation_expression);
@@ -29848,6 +31945,8 @@ namespace exprtk
 
                return error_node();
             }
+
+            assert(sem_.total_local_symb_size_bytes() <= settings().max_total_local_symbol_size_bytes());
 
             var_node = nse.var_node;
 
@@ -29873,7 +31972,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR185 - Illegal const variable definition",
+=======
+               "ERR187 - Illegal const variable definition",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -29883,7 +31986,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR186 - Expected 'const' keyword for const-variable definition",
+=======
+               "ERR188 - Expected 'const' keyword for const-variable definition",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -29893,7 +32000,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR187 - Expected 'var' keyword for const-variable definition",
+=======
+               "ERR189 - Expected 'var' keyword for const-variable definition",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -29908,7 +32019,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR188 - Expected a symbol for const-variable definition",
+=======
+               "ERR190 - Expected a symbol for const-variable definition",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -29918,7 +32033,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR189 - Illegal redefinition of reserved keyword: '" + var_name + "'",
+=======
+               "ERR191 - Illegal redefinition of reserved keyword: '" + var_name + "'",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -29928,7 +32047,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR190 - Illegal redefinition of variable '" + var_name + "'",
+=======
+               "ERR192 - Illegal redefinition of variable '" + var_name + "'",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -29938,11 +32061,16 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR191 - Illegal redefinition of local variable: '" + var_name + "'",
+=======
+               "ERR193 - Illegal redefinition of local variable: '" + var_name + "'",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
          }
+<<<<<<< Updated upstream
          else if (token_is(token_t::e_assign))
          {
             if (0 == (initialisation_expression = parse_expression()))
@@ -29969,6 +32097,44 @@ namespace exprtk
             }
          }
 
+=======
+         else if (!token_is(token_t::e_assign))
+         {
+               set_error(make_error(
+                  parser_error::e_syntax,
+                  current_token(),
+                  "ERR194 - Expected assignment operator after const-variable: '" + var_name + "' definition",
+                  exprtk_error_location));
+
+               return error_node();
+         }
+         else if (0 == (initialisation_expression = parse_expression()))
+         {
+            set_error(make_error(
+               parser_error::e_syntax,
+               current_token(),
+               "ERR195 - Failed to parse initialisation expression for const-variable: '" + var_name + "'",
+               exprtk_error_location));
+
+            return error_node();
+         }
+
+         if (!details::is_literal_node(initialisation_expression))
+         {
+            set_error(make_error(
+               parser_error::e_syntax,
+               current_token(),
+               "ERR196 - initialisation expression for const-variable: '" + var_name + "' must be a constant/literal",
+               exprtk_error_location));
+
+            free_node(node_allocator_, initialisation_expression);
+
+            return error_node();
+         }
+
+         assert(initialisation_expression);
+
+>>>>>>> Stashed changes
          const T init_value = initialisation_expression->value();
 
          free_node(node_allocator_, initialisation_expression);
@@ -29984,7 +32150,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR194 - Illegal redefinition of local variable: '" + var_name + "'",
+=======
+                  "ERR197 - Illegal redefinition of local variable: '" + var_name + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -30000,6 +32170,24 @@ namespace exprtk
 
          if (0 == var_node)
          {
+<<<<<<< Updated upstream
+=======
+            const std::size_t predicted_total_lclsymb_size = sizeof(T) + sem_.total_local_symb_size_bytes();
+
+            if (predicted_total_lclsymb_size > settings().max_total_local_symbol_size_bytes())
+            {
+               set_error(make_error(
+                  parser_error::e_syntax,
+                  current_token(),
+                  "ERR198 - Adding variable '" + var_name + "' "
+                  "will exceed max total local symbol size of: " + details::to_str(settings().max_total_local_symbol_size_bytes()) + " bytes, "
+                  "current total size: " + details::to_str(sem_.total_local_symb_size_bytes()) + " bytes",
+                  exprtk_error_location));
+
+               return error_node();
+            }
+
+>>>>>>> Stashed changes
             scope_element nse;
             nse.name      = var_name;
             nse.active    = true;
@@ -30014,7 +32202,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR195 - Failed to add new local const-variable '" + var_name + "' to SEM",
+=======
+                  "ERR199 - Failed to add new local const-variable '" + var_name + "' to SEM",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                sem_.free_element(nse);
@@ -30022,6 +32214,11 @@ namespace exprtk
                return error_node();
             }
 
+<<<<<<< Updated upstream
+=======
+            assert(sem_.total_local_symb_size_bytes() <= settings().max_total_local_symbol_size_bytes());
+
+>>>>>>> Stashed changes
             var_node = nse.var_node;
 
             exprtk_debug(("parse_define_constvar_statement() - INFO - Added new local const-variable: %s\n", nse.name.c_str()));
@@ -30044,7 +32241,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR196 - Expected a '{}' for uninitialised var definition",
+=======
+               "ERR200 - Expected a '{}' for uninitialised var definition",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -30054,7 +32255,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR197 - Expected ';' after uninitialised variable definition",
+=======
+               "ERR201 - Expected ';' after uninitialised variable definition",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -30071,7 +32276,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR198 - Illegal redefinition of local variable: '" + var_name + "'",
+=======
+                  "ERR202 - Illegal redefinition of local variable: '" + var_name + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -30086,6 +32295,21 @@ namespace exprtk
 
          if (0 == var_node)
          {
+            const std::size_t predicted_total_lclsymb_size = sizeof(T) + sem_.total_local_symb_size_bytes();
+
+            if (predicted_total_lclsymb_size > settings().max_total_local_symbol_size_bytes())
+            {
+               set_error(make_error(
+                  parser_error::e_syntax,
+                  current_token(),
+                  "ERR203 - Adding variable '" + var_name + "' "
+                  "will exceed max total local symbol size of: " + details::to_str(settings().max_total_local_symbol_size_bytes()) + " bytes, "
+                  "current total size: " + details::to_str(sem_.total_local_symb_size_bytes()) + " bytes",
+                  exprtk_error_location));
+
+               return error_node();
+            }
+
             scope_element nse;
             nse.name      = var_name;
             nse.active    = true;
@@ -30101,13 +32325,19 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR199 - Failed to add new local variable '" + var_name + "' to SEM",
+=======
+                  "ERR204 - Failed to add new local variable '" + var_name + "' to SEM",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                sem_.free_element(nse);
 
                return error_node();
             }
+
+            assert(sem_.total_local_symb_size_bytes() <= settings().max_total_local_symbol_size_bytes());
 
             exprtk_debug(("parse_uninitialised_var_statement() - INFO - Added new local variable: %s\n",
                           nse.name.c_str()));
@@ -30134,7 +32364,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR200 - Expected '(' at start of swap statement",
+=======
+               "ERR205 - Expected '(' at start of swap statement",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -30153,7 +32387,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR201 - Expected a symbol for variable or vector element definition",
+=======
+               "ERR206 - Expected a symbol for variable or vector element definition",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -30165,7 +32403,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR202 - First parameter to swap is an invalid vector element: '" + var0_name + "'",
+=======
+                  "ERR207 - First parameter to swap is an invalid vector element: '" + var0_name + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -30198,7 +32440,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR203 - First parameter to swap is an invalid variable: '" + var0_name + "'",
+=======
+                  "ERR208 - First parameter to swap is an invalid variable: '" + var0_name + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -30212,7 +32458,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR204 - Expected ',' between parameters to swap",
+=======
+               "ERR209 - Expected ',' between parameters to swap",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             if (variable0_generated)
@@ -30230,7 +32480,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR205 - Expected a symbol for variable or vector element definition",
+=======
+               "ERR210 - Expected a symbol for variable or vector element definition",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             if (variable0_generated)
@@ -30247,7 +32501,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR206 - Second parameter to swap is an invalid vector element: '" + var1_name + "'",
+=======
+                  "ERR211 - Second parameter to swap is an invalid vector element: '" + var1_name + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                if (variable0_generated)
@@ -30285,7 +32543,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR207 - Second parameter to swap is an invalid variable: '" + var1_name + "'",
+=======
+                  "ERR212 - Second parameter to swap is an invalid variable: '" + var1_name + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                if (variable0_generated)
@@ -30304,7 +32566,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR208 - Expected ')' at end of swap statement",
+=======
+               "ERR213 - Expected ')' at end of swap statement",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             if (variable0_generated)
@@ -30361,7 +32627,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR209 - Return call within a return call is not allowed",
+=======
+               "ERR214 - Return call within a return call is not allowed",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -30371,7 +32641,7 @@ namespace exprtk
 
          std::vector<expression_node_ptr> arg_list;
 
-         scoped_vec_delete<expression_node_t> sdd((*this),arg_list);
+         scoped_vec_delete<expression_node_t> svd((*this), arg_list);
 
          if (!details::imatch(current_token().value,"return"))
          {
@@ -30385,7 +32655,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR210 - Expected '[' at start of return statement",
+=======
+               "ERR215 - Expected '[' at start of return statement",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -30408,7 +32682,11 @@ namespace exprtk
                   set_error(make_error(
                      parser_error::e_syntax,
                      current_token(),
+<<<<<<< Updated upstream
                      "ERR211 - Expected ',' between values during call to return",
+=======
+                     "ERR216 - Expected ',' between values during call to return",
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   return error_node();
@@ -30420,7 +32698,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR212 - Zero parameter return statement not allowed",
+=======
+               "ERR217 - Zero parameter return statement not allowed",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -30435,7 +32717,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   prev_token,
+<<<<<<< Updated upstream
                   "ERR213 - Invalid ']' found during return call",
+=======
+                  "ERR218 - Invalid ']' found during return call",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -30460,7 +32746,7 @@ namespace exprtk
 
          expression_node_ptr result = expression_generator_.return_call(arg_list);
 
-         sdd.delete_ptr = (0 == result);
+         svd.delete_ptr = (0 == result);
 
          state_.return_stmt_present = true;
 
@@ -30484,7 +32770,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR214 - Assert statement within an assert statement is not allowed",
+=======
+               "ERR219 - Assert statement within an assert statement is not allowed",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -30495,7 +32785,11 @@ namespace exprtk
          next_token();
 
          std::vector<expression_node_ptr> assert_arg_list(3, error_node());
+<<<<<<< Updated upstream
          scoped_vec_delete<expression_node_t> sdd((*this), assert_arg_list);
+=======
+         scoped_vec_delete<expression_node_t> svd((*this), assert_arg_list);
+>>>>>>> Stashed changes
 
          expression_node_ptr& assert_condition = assert_arg_list[0];
          expression_node_ptr& assert_message   = assert_arg_list[1];
@@ -30506,7 +32800,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR215 - Expected '(' at start of assert statement",
+=======
+               "ERR220 - Expected '(' at start of assert statement",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -30520,7 +32818,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR216 - Failed to parse condition for assert statement",
+=======
+               "ERR221 - Failed to parse condition for assert statement",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -30535,7 +32837,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR217 - Expected ',' between condition and message for assert statement",
+=======
+                  "ERR222 - Expected ',' between condition and message for assert statement",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -30549,7 +32855,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR218 - " +
+=======
+                  "ERR223 - " +
+>>>>>>> Stashed changes
                   (assert_message ?
                   std::string("Expected string for assert message") :
                   std::string("Failed to parse message for assert statement")),
@@ -30564,7 +32874,11 @@ namespace exprtk
                   set_error(make_error(
                      parser_error::e_syntax,
                      current_token(),
+<<<<<<< Updated upstream
                      "ERR219 - Expected ',' between message and ID for assert statement",
+=======
+                     "ERR224 - Expected ',' between message and ID for assert statement",
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   return error_node();
@@ -30578,7 +32892,11 @@ namespace exprtk
                   set_error(make_error(
                      parser_error::e_syntax,
                      current_token(),
+<<<<<<< Updated upstream
                      "ERR220 - " +
+=======
+                     "ERR225 - " +
+>>>>>>> Stashed changes
                      (assert_id ?
                      std::string("Expected literal string for assert ID") :
                      std::string("Failed to parse string for assert ID")),
@@ -30591,7 +32909,11 @@ namespace exprtk
                   set_error(make_error(
                      parser_error::e_syntax,
                      current_token(),
+<<<<<<< Updated upstream
                      "ERR221 - Expected ')' at start of assert statement",
+=======
+                     "ERR226 - Expected ')' at start of assert statement",
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   return error_node();
@@ -30626,7 +32948,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR222 - Duplicate assert ID: " + context.id,
+=======
+                  "ERR227 - Duplicate assert ID: " + context.id,
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -30653,13 +32979,21 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR223 - Failed to synthesize assert",
+=======
+               "ERR228 - Failed to synthesize assert",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
          }
 
+<<<<<<< Updated upstream
          sdd.delete_ptr = false;
+=======
+         svd.delete_ptr = false;
+>>>>>>> Stashed changes
          return result_node;
       }
 
@@ -30676,7 +33010,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR224 - Invalid sequence of variable '" + symbol + "' and bracket",
+=======
+                  "ERR229 - Invalid sequence of variable '" + symbol + "' and bracket",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return false;
@@ -30727,7 +33065,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR225 - Invalid sequence of brackets",
+=======
+                  "ERR230 - Invalid sequence of brackets",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return false;
@@ -30867,7 +33209,11 @@ namespace exprtk
                   set_error(make_error(
                      parser_error::e_syntax,
                      current_token(),
+<<<<<<< Updated upstream
                      "ERR226 - Failed to generate node for function: '" + symbol + "'",
+=======
+                     "ERR231 - Failed to generate node for function: '" + symbol + "'",
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   return error_node();
@@ -30893,7 +33239,11 @@ namespace exprtk
                   set_error(make_error(
                      parser_error::e_syntax,
                      current_token(),
+<<<<<<< Updated upstream
                      "ERR227 - Failed to generate node for vararg function: '" + symbol + "'",
+=======
+                     "ERR232 - Failed to generate node for vararg function: '" + symbol + "'",
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   return error_node();
@@ -30919,7 +33269,11 @@ namespace exprtk
                   set_error(make_error(
                      parser_error::e_syntax,
                      current_token(),
+<<<<<<< Updated upstream
                      "ERR228 - Failed to generate node for generic function: '" + symbol + "'",
+=======
+                     "ERR233 - Failed to generate node for generic function: '" + symbol + "'",
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   return error_node();
@@ -30946,7 +33300,11 @@ namespace exprtk
                   set_error(make_error(
                      parser_error::e_syntax,
                      current_token(),
+<<<<<<< Updated upstream
                      "ERR229 - Failed to generate node for string function: '" + symbol + "'",
+=======
+                     "ERR234 - Failed to generate node for string function: '" + symbol + "'",
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   return error_node();
@@ -30972,7 +33330,11 @@ namespace exprtk
                   set_error(make_error(
                      parser_error::e_syntax,
                      current_token(),
+<<<<<<< Updated upstream
                      "ERR230 - Failed to generate node for overload function: '" + symbol + "'",
+=======
+                     "ERR235 - Failed to generate node for overload function: '" + symbol + "'",
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   return error_node();
@@ -30998,7 +33360,11 @@ namespace exprtk
                   set_error(make_error(
                      parser_error::e_syntax,
                      current_token(),
+<<<<<<< Updated upstream
                      "ERR231 - Invalid use of reserved symbol '" + symbol + "'",
+=======
+                     "ERR236 - Invalid use of reserved symbol '" + symbol + "'",
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   return error_node();
@@ -31063,7 +33429,11 @@ namespace exprtk
                   set_error(make_error(
                      parser_error::e_symtab,
                      current_token(),
+<<<<<<< Updated upstream
                      "ERR232 - Failed to create variable: '" + symbol + "'" +
+=======
+                     "ERR237 - Failed to create variable: '" + symbol + "'" +
+>>>>>>> Stashed changes
                      (error_message.empty() ? "" : " - " + error_message),
                      exprtk_error_location));
 
@@ -31083,7 +33453,11 @@ namespace exprtk
                   set_error(make_error(
                      parser_error::e_symtab,
                      current_token(),
+<<<<<<< Updated upstream
                      "ERR233 - Failed to resolve symbol: '" + symbol + "'" +
+=======
+                     "ERR238 - Failed to resolve symbol: '" + symbol + "'" +
+>>>>>>> Stashed changes
                      (error_message.empty() ? "" : " - " + error_message),
                      exprtk_error_location));
                }
@@ -31095,7 +33469,11 @@ namespace exprtk
          set_error(make_error(
             parser_error::e_syntax,
             current_token(),
+<<<<<<< Updated upstream
             "ERR234 - Undefined symbol: '" + symbol + "'",
+=======
+            "ERR239 - Undefined symbol: '" + symbol + "'",
+>>>>>>> Stashed changes
             exprtk_error_location));
 
          return error_node();
@@ -31116,7 +33494,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR235 - Invalid syntax '" + current_token().value  + "' possible missing operator or context",
+=======
+               "ERR240 - Invalid syntax '" + current_token().value  + "' possible missing operator or context",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
                return error_node();
@@ -31243,7 +33625,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_symtab,
                current_token(),
+<<<<<<< Updated upstream
                "ERR236 - Unknown variable or function encountered. Symbol table(s) "
+=======
+               "ERR241 - Unknown variable or function encountered. Symbol table(s) "
+>>>>>>> Stashed changes
                "is either invalid or does not contain symbol: '" + symbol + "'",
                exprtk_error_location));
 
@@ -31275,7 +33661,11 @@ namespace exprtk
                   set_error(make_error(
                      parser_error::e_numeric,
                      current_token(),
+<<<<<<< Updated upstream
                      "ERR237 - Failed generate node for scalar: '" + current_token().value + "'",
+=======
+                     "ERR242 - Failed generate node for scalar: '" + current_token().value + "'",
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   return error_node();
@@ -31289,7 +33679,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_numeric,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR238 - Failed to convert '" + current_token().value + "' to a number",
+=======
+                  "ERR243 - Failed to convert '" + current_token().value + "' to a number",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -31321,7 +33715,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR239 - Expected ')' instead of: '" + current_token().value + "'",
+=======
+                  "ERR244 - Expected ')' instead of: '" + current_token().value + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                details::free_node(node_allocator_, branch);
@@ -31348,7 +33746,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR240 - Expected ']' instead of: '" + current_token().value + "'",
+=======
+                  "ERR245 - Expected ']' instead of: '" + current_token().value + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                details::free_node(node_allocator_, branch);
@@ -31373,7 +33775,11 @@ namespace exprtk
                set_error(make_error(
                   parser_error::e_syntax,
                   current_token(),
+<<<<<<< Updated upstream
                   "ERR241 - Expected '}' instead of: '" + current_token().value + "'",
+=======
+                  "ERR246 - Expected '}' instead of: '" + current_token().value + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                details::free_node(node_allocator_, branch);
@@ -31422,7 +33828,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR242 - Premature end of expression[1]",
+=======
+               "ERR247 - Premature end of expression[1]",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -31432,7 +33842,11 @@ namespace exprtk
             set_error(make_error(
                parser_error::e_syntax,
                current_token(),
+<<<<<<< Updated upstream
                "ERR243 - Premature end of expression[2]",
+=======
+               "ERR248 - Premature end of expression[2]",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             return error_node();
@@ -32171,7 +34585,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_syntax,
                   parser_->current_state().token,
+<<<<<<< Updated upstream
                   "ERR244 - Invalid branches received for operator '" + details::to_str(operation) + "'",
+=======
+                  "ERR249 - Invalid branches received for operator '" + details::to_str(operation) + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -32181,7 +34599,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_syntax,
                   parser_->current_state().token,
+<<<<<<< Updated upstream
                   "ERR245 - Invalid branch pair for string operator '" + details::to_str(operation) + "'",
+=======
+                  "ERR250 - Invalid branch pair for string operator '" + details::to_str(operation) + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -32191,7 +34613,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_syntax,
                   parser_->current_state().token,
+<<<<<<< Updated upstream
                   "ERR246 - Invalid branch pair for assignment operator '" + details::to_str(operation) + "'",
+=======
+                  "ERR251 - Invalid branch pair for assignment operator '" + details::to_str(operation) + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -32201,7 +34627,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_syntax,
                   parser_->current_state().token,
+<<<<<<< Updated upstream
                   "ERR247 - Invalid branch pair for break/continue operator '" + details::to_str(operation) + "'",
+=======
+                  "ERR252 - Invalid branch pair for break/continue operator '" + details::to_str(operation) + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -32325,7 +34755,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_syntax,
                   parser_->current_state().token,
+<<<<<<< Updated upstream
                   "ERR248 - Invalid branches operator '" + details::to_str(operation) + "'",
+=======
+                  "ERR253 - Invalid branches operator '" + details::to_str(operation) + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -32335,7 +34769,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_syntax,
                   parser_->current_state().token,
+<<<<<<< Updated upstream
                   "ERR249 - Invalid branches for string operator '" + details::to_str(operation) + "'",
+=======
+                  "ERR254 - Invalid branches for string operator '" + details::to_str(operation) + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -32391,7 +34829,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_parser,
                   parser_->current_state().token,
+<<<<<<< Updated upstream
                   "ERR250 - Invalid " + invalid_branches + " for conditional statement",
+=======
+                  "ERR255 - Invalid " + invalid_branches + " for conditional statement",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -32442,7 +34884,11 @@ namespace exprtk
             parser_->set_error(parser_error::make_error(
                parser_error::e_parser,
                token_t(),
+<<<<<<< Updated upstream
                "ERR251 - Failed to synthesize node: " + node_name,
+=======
+               "ERR256 - Failed to synthesize node: " + node_name,
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             details::free_node(*node_allocator_, result);
@@ -32467,7 +34913,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_parser,
                   parser_->current_state().token,
+<<<<<<< Updated upstream
                   "ERR252 - Invalid " + invalid_branches + " for string conditional statement",
+=======
+                  "ERR257 - Invalid " + invalid_branches + " for string conditional statement",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -32509,7 +34959,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_parser,
                   token_t(),
+<<<<<<< Updated upstream
                   "ERR253 - Failed to synthesize node: conditional_string_node_t",
+=======
+                  "ERR258 - Failed to synthesize node: conditional_string_node_t",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                details::free_node(*node_allocator_, result);
@@ -32543,7 +34997,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_parser,
                   parser_->current_state().token,
+<<<<<<< Updated upstream
                   "ERR254 - Invalid " + invalid_branches + " for vector conditional statement",
+=======
+                  "ERR259 - Invalid " + invalid_branches + " for vector conditional statement",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -32617,7 +35075,11 @@ namespace exprtk
                   parser_->set_error(parser_error::make_error(
                      parser_error::e_parser,
                      parser_->current_state().token,
+<<<<<<< Updated upstream
                      "ERR255 - Infinite loop condition without 'break' or 'return' not allowed in while-loops",
+=======
+                     "ERR260 - Infinite loop condition without 'break' or 'return' not allowed in while-loops",
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   result = error_node();
@@ -32738,7 +35200,11 @@ namespace exprtk
                   parser_->set_error(parser_error::make_error(
                      parser_error::e_parser,
                      parser_->current_state().token,
+<<<<<<< Updated upstream
                      "ERR256 - Infinite loop condition without 'break' or 'return' not allowed in for-loop",
+=======
+                     "ERR261 - Infinite loop condition without 'break' or 'return' not allowed in for-loop",
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   result = error_node();
@@ -32806,7 +35272,7 @@ namespace exprtk
                                           );
             }
             #else
-               return error_node();
+            return error_node();
             #endif
          }
 
@@ -33489,7 +35955,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_synthesis,
                   token_t(),
+<<<<<<< Updated upstream
                   "ERR257 - Failed to synthesize node: str_vararg_node<vararg_multi_op>",
+=======
+                  "ERR262 - Failed to synthesize node: str_vararg_node<vararg_multi_op>",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                details::free_node(*node_allocator_, result);
@@ -33526,7 +35996,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_synthesis,
                   token_t(),
+<<<<<<< Updated upstream
                   "ERR258 - Failed to synthesize node: vararg_node",
+=======
+                  "ERR263 - Failed to synthesize node: vararg_node",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                details::free_node(*node_allocator_, result);
@@ -33581,7 +36055,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_synthesis,
                   token_t(),
+<<<<<<< Updated upstream
                   "ERR259 - Failed to synthesize node: function_N_node_t",
+=======
+                  "ERR264 - Failed to synthesize node: function_N_node_t",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                details::free_node(*node_allocator_, result);
@@ -33630,7 +36108,11 @@ namespace exprtk
             parser_->set_error(parser_error::make_error(
                parser_error::e_synthesis,
                token_t(),
+<<<<<<< Updated upstream
                "ERR260 - Failed to synthesize node: vararg_function_node<ivararg_function_t>",
+=======
+               "ERR265 - Failed to synthesize node: vararg_function_node<ivararg_function_t>",
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             details::free_node(*node_allocator_, result);
@@ -33696,7 +36178,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_synthesis,
                   token_t(),
+<<<<<<< Updated upstream
                   "ERR261 - Failed to synthesize node: " + node_name,
+=======
+                  "ERR266 - Failed to synthesize node: " + node_name,
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                details::free_node(*node_allocator_, result);
@@ -33770,7 +36256,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_synthesis,
                   token_t(),
+<<<<<<< Updated upstream
                   "ERR262 - Failed to synthesize node: " + node_name,
+=======
+                  "ERR267 - Failed to synthesize node: " + node_name,
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                details::free_node(*node_allocator_, result);
@@ -33815,7 +36305,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_synthesis,
                   token_t(),
+<<<<<<< Updated upstream
                   "ERR263 - Failed to synthesize node: return_node",
+=======
+                  "ERR268 - Failed to synthesize node: return_node",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                details::free_node(*node_allocator_, result);
@@ -33876,7 +36370,11 @@ namespace exprtk
                   parser_->set_error(parser_error::make_error(
                      parser_error::e_parser,
                      token_t(),
+<<<<<<< Updated upstream
                      "ERR264 - Index of " + details::to_str(vec_index) + " out of range for "
+=======
+                     "ERR269 - Index of " + details::to_str(vec_index) + " out of range for "
+>>>>>>> Stashed changes
                      "vector '" + symbol + "' of size " + details::to_str(vector_base->size()),
                      exprtk_error_location));
 
@@ -33905,7 +36403,11 @@ namespace exprtk
                   parser_->set_error(parser_error::make_error(
                      parser_error::e_synthesis,
                      token_t(),
+<<<<<<< Updated upstream
                      "ERR265 - Failed to synthesize node: " + node_name + " for vector: " + symbol,
+=======
+                     "ERR270 - Failed to synthesize node: " + node_name + " for vector: " + symbol,
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   details::free_node(*node_allocator_, result);
@@ -33931,7 +36433,11 @@ namespace exprtk
                   parser_->set_error(parser_error::make_error(
                      parser_error::e_synthesis,
                      token_t(),
+<<<<<<< Updated upstream
                      "ERR266 - Failed to synthesize node: " + node_name + " for vector: " + symbol,
+=======
+                     "ERR271 - Failed to synthesize node: " + node_name + " for vector: " + symbol,
+>>>>>>> Stashed changes
                      exprtk_error_location));
 
                   details::free_node(*node_allocator_, result);
@@ -33966,6 +36472,11 @@ namespace exprtk
                      result = error_node();
                   }
 
+<<<<<<< Updated upstream
+=======
+                  assert(parser_->sem_.total_local_symb_size_bytes() <= parser_->settings().max_total_local_symbol_size_bytes());
+
+>>>>>>> Stashed changes
                   details::free_node(*node_allocator_,vec_node);
 
                   exprtk_debug(("vector_element() - INFO - Added new local vector element: %s\n", nse.name.c_str()));
@@ -34010,7 +36521,11 @@ namespace exprtk
             parser_->set_error(parser_error::make_error(
                parser_error::e_synthesis,
                token_t(),
+<<<<<<< Updated upstream
                "ERR267 - Failed to synthesize node: " + node_name,
+=======
+               "ERR272 - Failed to synthesize node: " + node_name,
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             details::free_node(*node_allocator_, result);
@@ -34103,7 +36618,7 @@ namespace exprtk
          {
             if (node)
             {
-               switch(node->type())
+               switch (node->type())
                {
                   case details::expression_node<T>::e_variable:
                      return reinterpret_cast<const void*>(&static_cast<variable_node_t*>(node)->ref());
@@ -34166,7 +36681,11 @@ namespace exprtk
                   parser_->set_error(parser_error::make_error(
                      parser_error::e_parser,
                      token,
+<<<<<<< Updated upstream
                      "ERR268 - Symbol '" + token.value + "' cannot be assigned-to as it is immutable.",
+=======
+                     "ERR273 - Symbol '" + token.value + "' cannot be assigned-to as it is immutable.",
+>>>>>>> Stashed changes
                      exprtk_error_location));
                }
                else
@@ -34240,7 +36759,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_syntax,
                   parser_->current_state().token,
+<<<<<<< Updated upstream
                   "ERR269 - Cannot assign value to const variable",
+=======
+                  "ERR274 - Cannot assign value to const variable",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -34250,7 +36773,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_syntax,
                   parser_->current_state().token,
+<<<<<<< Updated upstream
                   "ERR270 - Invalid branches for assignment operator '" + details::to_str(operation) + "'",
+=======
+                  "ERR275 - Invalid branches for assignment operator '" + details::to_str(operation) + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -34508,7 +37035,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_syntax,
                   parser_->current_state().token,
+<<<<<<< Updated upstream
                   "ERR271 - Invalid branches for assignment operator '" + details::to_str(operation) + "'",
+=======
+                  "ERR276 - Invalid branches for assignment operator '" + details::to_str(operation) + "'",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                return error_node();
@@ -34522,7 +37053,11 @@ namespace exprtk
             parser_->set_error(parser_error::make_error(
                parser_error::e_synthesis,
                token_t(),
+<<<<<<< Updated upstream
                "ERR272 - Failed to synthesize node: " + node_name,
+=======
+               "ERR277 - Failed to synthesize node: " + node_name,
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             details::free_node(*node_allocator_, result);
@@ -34612,7 +37147,11 @@ namespace exprtk
             parser_->set_error(parser_error::make_error(
                parser_error::e_synthesis,
                token_t(),
+<<<<<<< Updated upstream
                "ERR273 - Failed to synthesize node: " + node_name,
+=======
+               "ERR278 - Failed to synthesize node: " + node_name,
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             details::free_node(*node_allocator_, result);
@@ -34698,7 +37237,11 @@ namespace exprtk
             parser_->set_error(parser_error::make_error(
                parser_error::e_synthesis,
                token_t(),
+<<<<<<< Updated upstream
                "ERR274 - Failed to synthesize node: " + node_name,
+=======
+               "ERR279 - Failed to synthesize node: " + node_name,
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             details::free_node(*node_allocator_, result);
@@ -34781,7 +37324,11 @@ namespace exprtk
             parser_->set_error(parser_error::make_error(
                parser_error::e_synthesis,
                token_t(),
+<<<<<<< Updated upstream
                "ERR275 - Failed to synthesize node: " + node_name,
+=======
+               "ERR280 - Failed to synthesize node: " + node_name,
+>>>>>>> Stashed changes
                exprtk_error_location));
 
             details::free_node(*node_allocator_, result);
@@ -41426,7 +43973,11 @@ namespace exprtk
                parser_->set_error(parser_error::make_error(
                   parser_error::e_parser,
                   token_t(),
+<<<<<<< Updated upstream
                   "ERR276 - Failed to synthesize node: NodeType",
+=======
+                  "ERR281 - Failed to synthesize node: NodeType",
+>>>>>>> Stashed changes
                   exprtk_error_location));
 
                details::free_node(*node_allocator_, expression_point);
@@ -41762,6 +44313,24 @@ namespace exprtk
 
          state_.return_stmt_present = false;
          #endif
+      }
+
+      inline bool valid_settings()
+      {
+         const std::size_t max_local_vector_size_bytes = sizeof(T) * settings_.max_local_vector_size();
+
+         if (max_local_vector_size_bytes > settings_.max_total_local_symbol_size_bytes())
+         {
+            set_error(make_error(
+               parser_error::e_parser,
+               "ERR282 - Max local vector size of " + details::to_str(max_local_vector_size_bytes) + " bytes "
+               "is larger than max total local symbol size of " + details::to_str(settings_.max_total_local_symbol_size_bytes()) + " bytes",
+               exprtk_error_location));
+
+            return false;
+         }
+
+         return true;
       }
 
    private:
@@ -42490,7 +45059,11 @@ namespace exprtk
          disable_has_side_effects(*this);
       }
 
+<<<<<<< Updated upstream
       virtual ~polynomial()
+=======
+      virtual ~polynomial() exprtk_override
+>>>>>>> Stashed changes
       {}
 
       #define poly_rtrn(NN) \
@@ -42602,7 +45175,7 @@ namespace exprtk
          function()
          {}
 
-         function(const std::string& n)
+         explicit function(const std::string& n)
          : name_(n)
          {}
 
@@ -42747,7 +45320,7 @@ namespace exprtk
 
          using exprtk::ifunction<T>::operator();
 
-         base_func(const std::size_t& pc = 0)
+         explicit base_func(const std::size_t& pc = 0)
          : exprtk::ifunction<T>(pc)
          , local_var_stack_size(0)
          , stack_depth(0)
@@ -42909,6 +45482,7 @@ namespace exprtk
                {
                   copy(input_params_stack.back(), v);
                   input_params_stack.pop_back();
+<<<<<<< Updated upstream
                }
 
                if (!local_vars.empty())
@@ -42919,6 +45493,18 @@ namespace exprtk
 
                if (!local_str_vars.empty())
                {
+=======
+               }
+
+               if (!local_vars.empty())
+               {
+                  copy(local_var_stack.back(), local_vars);
+                  local_var_stack.pop_back();
+               }
+
+               if (!local_str_vars.empty())
+               {
+>>>>>>> Stashed changes
                   copy(local_str_stack.back(), local_str_vars);
                   local_str_stack.pop_back();
                }
@@ -43390,7 +45976,11 @@ namespace exprtk
                parser_error::make_error(
                   parser_error::e_parser,
                   lexer::token(),
+<<<<<<< Updated upstream
                   "ERR277 - Function '" + name + "' is an invalid overload",
+=======
+                  "ERR283 - Function '" + name + "' is an invalid overload",
+>>>>>>> Stashed changes
                   exprtk_error_location);
 
             error_list_.push_back(error);
@@ -44809,6 +47399,8 @@ namespace exprtk
       {}
 
       inline T operator() (const std::size_t& ps_index, parameter_list_t parameters) exprtk_override
+<<<<<<< Updated upstream
+=======
       {
          vector_t vec(parameters[0]);
 
@@ -44860,6 +47452,7 @@ namespace exprtk
       {}
 
       inline T operator() (const std::size_t& ps_index, parameter_list_t parameters) exprtk_override
+>>>>>>> Stashed changes
       {
          vector_t vec(parameters[0]);
 
@@ -44889,7 +47482,11 @@ namespace exprtk
    };
 
    template <typename T>
+<<<<<<< Updated upstream
+   class ror exprtk_final : public exprtk::igeneric_function<T>
+=======
    class reverse exprtk_final : public exprtk::igeneric_function<T>
+>>>>>>> Stashed changes
    {
    public:
 
@@ -44900,6 +47497,62 @@ namespace exprtk
       typedef typename generic_type::vector_view    vector_t;
 
       using igfun_t::operator();
+
+      reverse()
+      : exprtk::igeneric_function<T>("V|VTT")
+        /*
+           Overloads:
+           0. V   - vector
+           1. VTT - vector, r0, r1
+        */
+      {}
+
+      inline T operator() (const std::size_t& ps_index, parameter_list_t parameters) exprtk_override
+      {
+         vector_t vec(parameters[0]);
+
+         std::size_t r0 = 0;
+         std::size_t r1 = vec.size() - 1;
+
+         if (
+              (1 == ps_index) &&
+              !helper::load_vector_range<T>::process(parameters, r0, r1, 1, 2, 0)
+            )
+            return T(0);
+
+<<<<<<< Updated upstream
+         const std::size_t dist  = r1 - r0 + 1;
+         const std::size_t shift = (dist - (n % dist)) % dist;
+
+         std::rotate(
+            vec.begin() + r0,
+            vec.begin() + r0 + shift,
+            vec.begin() + r1 + 1);
+=======
+         std::reverse(vec.begin() + r0, vec.begin() + r1 + 1);
+>>>>>>> Stashed changes
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
+<<<<<<< Updated upstream
+   class reverse exprtk_final : public exprtk::igeneric_function<T>
+=======
+   class shift_left exprtk_final : public exprtk::igeneric_function<T>
+>>>>>>> Stashed changes
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using igfun_t::operator();
+<<<<<<< Updated upstream
 
       reverse()
       : exprtk::igeneric_function<T>("V|VTT")
@@ -44941,6 +47594,8 @@ namespace exprtk
       typedef typename generic_type::vector_view    vector_t;
 
       using igfun_t::operator();
+=======
+>>>>>>> Stashed changes
 
       shift_left()
       : exprtk::igeneric_function<T>("VT|VTTT")
@@ -45929,6 +48584,137 @@ namespace exprtk
    };
 
    template <typename T>
+<<<<<<< Updated upstream
+=======
+   class min_elemwise exprtk_final : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using igfun_t::operator();
+
+      min_elemwise()
+      : exprtk::igeneric_function<T>("VT|VVT|VTTT|VVTTT")
+      /*
+         Overloads:
+         0. VT    - vector, T
+         0. VVT   - vector, vector, T
+         0. VTTT  - vector, r0, r1, T
+         0. VVTTT - vector, vector, r0, r1, T
+      */
+      {}
+
+      inline T operator() (const std::size_t& ps_index, parameter_list_t parameters) exprtk_override
+      {
+         std::size_t out_vec_index = 0;
+         std::size_t in_vec_index  = (ps_index & 1) ? 1 : 0;
+         std::size_t scalar_index  = parameters.size() - 1;
+
+         vector_t out_vec(parameters[out_vec_index]);
+         vector_t in_vec (parameters[in_vec_index ]);
+
+         const T s = scalar_t(parameters[scalar_index ])();
+
+         std::size_t r0 = 0;
+         std::size_t r1 = in_vec.size() - 1;
+
+         if ((2 == ps_index) || (3 == ps_index))
+         {
+            std::size_t rng_idx0 = 0;
+            std::size_t rng_idx1 = 0;
+
+            switch (ps_index)
+            {
+               case 2 : { rng_idx0 = 1; rng_idx1 = 2; }; break;
+               case 3 : { rng_idx0 = 2; rng_idx1 = 3; }; break;
+            }
+
+            if (!helper::load_vector_range<T>::process(parameters, r0, r1, rng_idx0, rng_idx1, 0))
+            {
+               return T(0);
+            }
+         }
+
+         for (std::size_t i = r0; i <= r1; ++i)
+         {
+            out_vec[i] = exprtk::details::numeric::min(in_vec[i], s);
+         }
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
+   class max_elemwise exprtk_final : public exprtk::igeneric_function<T>
+   {
+   public:
+
+      typedef typename exprtk::igeneric_function<T> igfun_t;
+      typedef typename igfun_t::parameter_list_t    parameter_list_t;
+      typedef typename igfun_t::generic_type        generic_type;
+      typedef typename generic_type::scalar_view    scalar_t;
+      typedef typename generic_type::vector_view    vector_t;
+
+      using igfun_t::operator();
+
+      max_elemwise()
+      : exprtk::igeneric_function<T>("VT|VVT|VTTT|VVTTT")
+      /*
+         Overloads:
+         0. VT    - vector, T
+         1. VVT   - vector, vector, T
+         2. VTTT  - vector, r0, r1, T
+         3. VVTTT - vector, vector, r0, r1, T
+      */
+      {}
+
+      inline T operator() (const std::size_t& ps_index, parameter_list_t parameters) exprtk_override
+      {
+         std::size_t out_vec_index = 0;
+         std::size_t in_vec_index  = (ps_index & 1) ? 1 : 0;
+         std::size_t scalar_index  = parameters.size() - 1;
+
+         vector_t out_vec(parameters[out_vec_index]);
+         vector_t in_vec (parameters[in_vec_index ]);
+
+         const T s = scalar_t(parameters[scalar_index ])();
+
+         std::size_t r0 = 0;
+         std::size_t r1 = in_vec.size() - 1;
+
+         if ((2 == ps_index) || (3 == ps_index))
+         {
+            std::size_t rng_idx0 = 0;
+            std::size_t rng_idx1 = 0;
+
+            switch (ps_index)
+            {
+               case 2 : { rng_idx0 = 1; rng_idx1 = 2; }; break;
+               case 3 : { rng_idx0 = 2; rng_idx1 = 3; }; break;
+            }
+
+            if (!helper::load_vector_range<T>::process(parameters, r0, r1, rng_idx0, rng_idx1, 0))
+            {
+               return T(0);
+            }
+         }
+
+         for (std::size_t i = r0; i <= r1; ++i)
+         {
+            out_vec[i] = exprtk::details::numeric::max(in_vec[i], s);
+         }
+
+         return T(1);
+      }
+   };
+
+   template <typename T>
+>>>>>>> Stashed changes
    struct package
    {
       all_true       <T> at;
@@ -45959,6 +48745,11 @@ namespace exprtk
       dotk           <T> dtk;
       threshold_above<T> ta;
       threshold_below<T> tb;
+<<<<<<< Updated upstream
+=======
+      min_elemwise<T>    miew;
+      max_elemwise<T>    maew;
+>>>>>>> Stashed changes
 
       bool register_package(exprtk::symbol_table<T>& symtab)
       {
@@ -46001,6 +48792,12 @@ namespace exprtk
          exprtk_register_function("dotk"            , dtk       )
          exprtk_register_function("threshold_above" , ta        )
          exprtk_register_function("threshold_below" , tb        )
+<<<<<<< Updated upstream
+=======
+         exprtk_register_function("min_elemwise"    , miew      )
+         exprtk_register_function("max_elemwise"    , maew      )
+
+>>>>>>> Stashed changes
          #undef exprtk_register_function
 
          return true;
@@ -46019,11 +48816,19 @@ namespace exprtk
       using ::exprtk::details::char_cptr;
 
       static char_cptr library = "Mathematical Expression Toolkit";
+<<<<<<< Updated upstream
       static char_cptr version = "2.718281828459045235360287471352662497757"
                                  "24709369995957496696762772407663035354759"
                                  "45713821785251664274274663919320030599218"
                                  "17413596629043572900334295260595630738132";
       static char_cptr date    = "20240101";
+=======
+      static char_cptr version = "2.71828182845904523536028747135266249775724"
+                                 "7093699959574966967627724076630353547594571"
+                                 "3821785251664274274663919320030599218174135"
+                                 "9662904357290033429526059563073813232862794";
+      static char_cptr date    = "20250101";
+>>>>>>> Stashed changes
       static char_cptr min_cpp = "199711L";
 
       static inline std::string data()
